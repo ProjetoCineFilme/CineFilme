@@ -20,6 +20,17 @@
         "title": { "type": "string", "description": "Title of the movie" }
       },
       "required": ["movie_id", "title"]
+    },
+    "user": {
+      "title": "User Profile",
+      "description": "Mapping from auth to numeric ID",
+      "type": "object",
+      "properties": {
+        "user_id": { "type": "integer", "description": "Numeric ID for graph" },
+        "email": { "type": "string", "description": "User email" },
+        "uid": { "type": "string", "description": "Firebase Auth UID" }
+      },
+      "required": ["user_id", "email", "uid"]
     }
   },
   "firestore": {
@@ -30,6 +41,10 @@
     "/movies/{movieId}": {
       "schema": "movie",
       "description": "Collection of movies and their titles"
+    },
+    "/users/{userId}": {
+      "schema": "user",
+      "description": "User profile mapping"
     }
   }
 }
