@@ -44,9 +44,20 @@ export default function RatingFlow({ onComplete }: { onComplete: (userId: number
           if (!querySnapshot.empty) {
             const userData = querySnapshot.docs[0].data();
             setAssignedId(userData.user_id);
+            // If they already exist but haven't rated enough, we could show rating, 
+            // but for now let's go straight to complete if they have an ID.
             setStep('complete');
           } else {
-            setStep('rating');
+            // New user but logged in: Generate ID immediately
+            const newNumericId = Math.floor(Date.now() % 1000000) + 1000;
+            await addDoc(usersRef, {
+              user_id: newNumericId,
+              email: u.email,
+              uid: u.uid,
+              created_at: new Date()
+            });
+            setAssignedId(newNumericId);
+            setStep('rating'); // Encourage them to rate to get data
           }
         } catch (e) {
           console.error("Error checking profile", e);
@@ -63,11 +74,13 @@ export default function RatingFlow({ onComplete }: { onComplete: (userId: number
 
   const handleGoogleLogin = async () => {
     setAuthError('');
+    setLoading(true);
     try {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
     } catch (error: any) {
       setAuthError("Erro ao entrar com Google. Tente novamente.");
+      setLoading(false);
     }
   };
 
@@ -80,6 +93,7 @@ export default function RatingFlow({ onComplete }: { onComplete: (userId: number
       } else {
         await signInWithEmailAndPassword(auth, email, password);
       }
+      // Note: step update will happen in onAuthStateChanged
     } catch (error: any) {
       if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
         setAuthError("E-mail ou senha incorretos.");
@@ -88,7 +102,6 @@ export default function RatingFlow({ onComplete }: { onComplete: (userId: number
       } else {
         setAuthError("Ocorreu um erro. Verifique seus dados.");
       }
-    } finally {
       setLoading(false);
     }
   };
@@ -98,24 +111,14 @@ export default function RatingFlow({ onComplete }: { onComplete: (userId: number
   };
 
   const handleSubmitRatings = async () => {
-    if (!user) return;
+    if (!user || !assignedId) return;
     setLoading(true);
 
     try {
-      const newNumericId = Math.floor(Date.now() % 1000000) + 1000;
-      
-      const usersRef = collection(db, "users");
-      await addDoc(usersRef, {
-        user_id: newNumericId,
-        email: user.email,
-        uid: user.uid,
-        created_at: new Date()
-      });
-
       const ratingsRef = collection(db, "ratings");
       for (const [movieId, rating] of Object.entries(ratings)) {
         await addDoc(ratingsRef, {
-          user_id: newNumericId,
+          user_id: assignedId,
           movie_id: Number(movieId),
           rating: rating,
           user_email: user.email,
@@ -123,7 +126,6 @@ export default function RatingFlow({ onComplete }: { onComplete: (userId: number
         });
       }
 
-      setAssignedId(newNumericId);
       setStep('complete');
     } catch (error) {
       console.error("Error saving ratings", error);
