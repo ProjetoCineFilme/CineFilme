@@ -28,7 +28,10 @@ export default function LandingPage() {
             <div className="bg-indigo-600 p-3 rounded-xl mb-4 shadow-lg shadow-indigo-200">
               <Film className="w-8 h-8 text-white" />
             </div>
-            <h1 className="text-3xl font-bold text-neutral-900 tracking-tight">CineFilme</h1>
+            <h1 className="text-3xl font-bold text-neutral-900 tracking-tight flex items-center gap-2">
+              CineFilme 
+              <span className="text-[10px] bg-neutral-900 text-white px-2 py-0.5 rounded-full font-mono font-normal">NEXT.JS</span>
+            </h1>
             <p className="text-neutral-500 mt-2 text-center text-sm">
               MVP de Recomendação de Filmes baseada em Grafos
             </p>
