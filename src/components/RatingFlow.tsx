@@ -34,40 +34,48 @@ export default function RatingFlow({ onComplete }: { onComplete: (userId: number
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (u) => {
       setUser(u);
+      setAuthError('');
+      
       if (u) {
-        setLoading(true);
+        setCheckingProfile(true);
         try {
+          // Busca o perfil do usuário no Firestore
           const usersRef = collection(db, "users");
           const q = query(usersRef, where("email", "==", u.email));
           const querySnapshot = await getDocs(q);
           
           if (!querySnapshot.empty) {
+            // Usuário já existe, recupera o ID
             const userData = querySnapshot.docs[0].data();
             setAssignedId(userData.user_id);
-            // If they already exist but haven't rated enough, we could show rating, 
-            // but for now let's go straight to complete if they have an ID.
             setStep('complete');
           } else {
-            // New user but logged in: Generate ID immediately
-            const newNumericId = Math.floor(Date.now() % 1000000) + 1000;
+            // Novo usuário logado (pelo Google ou Cadastro recente)
+            // Simula um "ID incremental" baseado no timestamp + offset para o MVP
+            const newNumericId = Math.floor(Date.now() / 1000) - 1715200000; 
+            
             await addDoc(usersRef, {
               user_id: newNumericId,
               email: u.email,
               uid: u.uid,
               created_at: new Date()
             });
+            
             setAssignedId(newNumericId);
-            setStep('rating'); // Encourage them to rate to get data
+            setStep('rating'); // Leva para avaliar filmes para ter dados iniciais
           }
-        } catch (e) {
-          console.error("Error checking profile", e);
+        } catch (e: any) {
+          console.error("Erro ao verificar perfil:", e);
+          setAuthError("Erro ao conectar com o banco. Verifique sua conexão.");
         } finally {
+          setCheckingProfile(false);
           setLoading(false);
         }
       } else {
         setStep('login');
+        setCheckingProfile(false);
+        setLoading(false);
       }
-      setCheckingProfile(false);
     });
     return unsubscribe;
   }, []);
@@ -79,12 +87,16 @@ export default function RatingFlow({ onComplete }: { onComplete: (userId: number
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
     } catch (error: any) {
-      setAuthError("Erro ao entrar com Google. Tente novamente.");
+      setAuthError("Erro ao entrar com Google.");
       setLoading(false);
     }
   };
 
   const handleEmailAuth = async (isSignup: boolean) => {
+    if (!email || !password) {
+      setAuthError("Preencha todos os campos.");
+      return;
+    }
     setAuthError('');
     setLoading(true);
     try {
@@ -93,16 +105,18 @@ export default function RatingFlow({ onComplete }: { onComplete: (userId: number
       } else {
         await signInWithEmailAndPassword(auth, email, password);
       }
-      // Note: step update will happen in onAuthStateChanged
+      // O useEffect onAuthStateChanged cuidará do redirecionamento
     } catch (error: any) {
-      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+      setLoading(false);
+      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
         setAuthError("E-mail ou senha incorretos.");
       } else if (error.code === 'auth/email-already-in-use') {
-        setAuthError("Este e-mail já está sendo usado.");
+        setAuthError("Este e-mail já está em uso.");
+      } else if (error.code === 'auth/weak-password') {
+        setAuthError("A senha deve ter pelo menos 6 caracteres.");
       } else {
-        setAuthError("Ocorreu um erro. Verifique seus dados.");
+        setAuthError("Erro na autenticação. Tente novamente.");
       }
-      setLoading(false);
     }
   };
 
@@ -303,6 +317,13 @@ export default function RatingFlow({ onComplete }: { onComplete: (userId: number
               className="w-full bg-neutral-900 hover:bg-black text-white font-bold py-4 rounded-2xl transition-all flex items-center justify-center gap-2 shadow-xl shadow-neutral-200"
             >
               Ir para o Painel <ArrowRight className="w-4 h-4" />
+            </button>
+
+            <button
+              onClick={() => auth.signOut()}
+              className="mt-4 text-[10px] text-neutral-400 hover:text-red-500 font-bold uppercase tracking-widest transition-colors"
+            >
+              Sair da conta
             </button>
           </motion.div>
         )}
