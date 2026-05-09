@@ -1,17 +1,19 @@
+'use client';
+
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { Film, ArrowRight, Play } from 'lucide-react';
 import { motion } from 'motion/react';
 
 export default function LandingPage() {
   const [userId, setUserId] = useState('');
   const [topN, setTopN] = useState('10');
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (!userId) return;
-    navigate(`/recommendations?user_id=${userId}&top_n=${topN}`);
+    router.push(`/recommendations?user_id=${userId}&top_n=${topN}`);
   };
 
   return (
