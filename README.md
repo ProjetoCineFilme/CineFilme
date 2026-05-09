@@ -1,11 +1,32 @@
-<div align="center">
+# CineFilme — Sistema de Recomendação de Filmes baseado em Grafos
 
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+Este projeto é um MVP de um sistema de recomendação que utiliza filtragem colaborativa baseada em usuários (User-User Collaborative Filtering) implementada através de uma estrutura de grafo bipartido.
 
-  <h1>Built with AI Studio</h2>
+## Como rodar localmente
 
-  <p>The fastest path from prompt to production with Gemini.</p>
+1. Instale as dependências:
+   ```bash
+   npm install
+   ```
+2. Configure o Firebase:
+   - Copie o arquivo `.env.local.example` para `.env.local`
+   - Preencha as credenciais do seu projeto Firebase ( Firestore habilitado ).
+   - Certifique-se de ter as coleções `ratings` e `movies` no seu banco.
 
-  <a href="https://aistudio.google.com/apps">Start building</a>
+3. Execute o servidor de desenvolvimento:
+   ```bash
+   npm run dev
+   ```
+   Acesse: `http://localhost:3000`
 
-</div>
+## Algoritmos
+- **Similaridade de Cosseno**: Mede a proximidade entre perfis de usuários.
+- **BFS (Breadth-First Search)**: Explora o grafo para encontrar filmes candidatos.
+- **Ranking Ponderado**: Calcula a nota estimada baseada na opinião de vizinhos similares.
+
+## Tecnologias
+- Framework: Express + React (Vite)
+- Banco de dados: Firebase Firestore
+- Estilização: Tailwind CSS
+- Animações: Motion
+- Testes: Vitest

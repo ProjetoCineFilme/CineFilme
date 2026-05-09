@@ -1,0 +1,35 @@
+{
+  "entities": {
+    "rating": {
+      "title": "Rating",
+      "description": "A user's rating for a movie",
+      "type": "object",
+      "properties": {
+        "user_id": { "type": "integer", "description": "ID of the user" },
+        "movie_id": { "type": "integer", "description": "ID of the movie" },
+        "rating": { "type": "number", "description": "Rating value (1-5)" }
+      },
+      "required": ["user_id", "movie_id", "rating"]
+    },
+    "movie": {
+      "title": "Movie",
+      "description": "Movie details",
+      "type": "object",
+      "properties": {
+        "movie_id": { "type": "integer", "description": "ID of the movie" },
+        "title": { "type": "string", "description": "Title of the movie" }
+      },
+      "required": ["movie_id", "title"]
+    }
+  },
+  "firestore": {
+    "/ratings/{ratingId}": {
+      "schema": "rating",
+      "description": "Collection of movie ratings by users"
+    },
+    "/movies/{movieId}": {
+      "schema": "movie",
+      "description": "Collection of movies and their titles"
+    }
+  }
+}

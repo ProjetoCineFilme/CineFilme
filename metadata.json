@@ -1,0 +1,6 @@
+{
+  "name": "CineFilme",
+  "description": "Sistema de recomendação de filmes baseado em teoria dos grafos e similaridade de cosseno.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
