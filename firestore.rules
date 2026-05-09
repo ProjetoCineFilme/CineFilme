@@ -1,48 +1,43 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Global Safety Net
+    // Default deny
     match /{document=**} {
       allow read, write: if false;
     }
 
-    // Helpers
+    // Helper functions
     function isSignedIn() {
       return request.auth != null;
     }
 
-    function isValidId(id) {
-      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    function isOwner(email) {
+      return isSignedIn() && request.auth.token.email == email;
     }
 
-    // Entities
-    function isValidRating(data) {
-      return data.keys().hasAll(['user_id', 'movie_id', 'rating']) 
-        && data.keys().size() == 3
-        && data.user_id is int
-        && data.movie_id is int
-        && data.rating is number
-        && data.rating >= 1 && data.rating <= 5;
+    // Users Collection
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.email == request.auth.token.email;
+      allow update, delete: if isOwner(resource.data.email);
     }
 
-    function isValidMovie(data) {
-      return data.keys().hasAll(['movie_id', 'title'])
-        && data.keys().size() == 2
-        && data.movie_id is int
-        && data.title is string && data.title.size() <= 200;
-    }
-
-    // Collections
+    // Ratings Collection
     match /ratings/{ratingId} {
       allow read: if true;
-      allow create: if isValidRating(request.resource.data);
-      allow update, delete: if false; // Ratings are immutable in this MVP
+      allow create: if isSignedIn() && request.resource.data.user_email == request.auth.token.email;
+      allow update, delete: if isOwner(resource.data.user_email);
     }
 
+    // Movies Collection
     match /movies/{movieId} {
       allow read: if true;
-      allow create: if isValidMovie(request.resource.data);
-      allow update, delete: if false;
+      allow write: if false; // Only via admin/seed (not implemented here for safety)
+    }
+    
+    // Legacy mapping if needed
+    match /user_mappings/{mappingId} {
+      allow read, write: if isSignedIn();
     }
   }
 }
