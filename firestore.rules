@@ -1,43 +1,22 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Default deny
     match /{document=**} {
       allow read, write: if false;
     }
 
-    // Helper functions
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    function isOwner(email) {
-      return isSignedIn() && request.auth.token.email == email;
-    }
-
-    // Users Collection
     match /users/{userId} {
-      allow read: if isSignedIn();
-      allow create: if isSignedIn() && request.resource.data.email == request.auth.token.email;
-      allow update, delete: if isOwner(resource.data.email);
+      // O usuário pode ler e escrever seu próprio perfil baseado no UID
+      allow read, write: if request.auth != null && request.auth.uid == userId;
     }
 
-    // Ratings Collection
     match /ratings/{ratingId} {
       allow read: if true;
-      allow create: if isSignedIn() && request.resource.data.user_email == request.auth.token.email;
-      allow update, delete: if isOwner(resource.data.user_email);
+      allow create: if request.auth != null;
     }
 
-    // Movies Collection
     match /movies/{movieId} {
       allow read: if true;
-      allow write: if false; // Only via admin/seed (not implemented here for safety)
-    }
-    
-    // Legacy mapping if needed
-    match /user_mappings/{mappingId} {
-      allow read, write: if isSignedIn();
     }
   }
 }

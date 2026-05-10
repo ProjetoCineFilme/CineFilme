@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { db, auth } from '../lib/firebase';
-import { collection, addDoc, getDocs, query, where } from 'firebase/firestore';
+import { collection, addDoc, getDocs, query, where, doc, getDoc, setDoc } from 'firebase/firestore';
 import { signInWithPopup, GoogleAuthProvider, User, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { motion, AnimatePresence } from 'motion/react';
 import { ArrowRight, Star, CheckCircle2, ChevronRight, LogIn, Mail, Lock, UserPlus, Loader2 } from 'lucide-react';
@@ -39,22 +39,22 @@ export default function RatingFlow({ onComplete }: { onComplete: (userId: number
       if (u) {
         setCheckingProfile(true);
         try {
-          // Busca o perfil do usuário no Firestore
-          const usersRef = collection(db, "users");
-          const q = query(usersRef, where("email", "==", u.email));
-          const querySnapshot = await getDocs(q);
+          // Usamos o UID diretamente como ID do documento para ser 100% certeiro e rápido
+          // Isso resolve o erro de conexão/permissão
+          const userDocRef = doc(db, "users", u.uid);
+          const userDoc = await getDoc(userDocRef);
           
-          if (!querySnapshot.empty) {
-            // Usuário já existe, recupera o ID
-            const userData = querySnapshot.docs[0].data();
+          if (userDoc.exists()) {
+            // Usuário já tem um perfil, recupera o ID numérico
+            const userData = userDoc.data();
             setAssignedId(userData.user_id);
             setStep('complete');
           } else {
-            // Novo usuário logado (pelo Google ou Cadastro recente)
-            // Simula um "ID incremental" baseado no timestamp + offset para o MVP
-            const newNumericId = Math.floor(Date.now() / 1000) - 1715200000; 
+            // Novo usuário logado (Google ou Cadastro)
+            // Geramos um ID numérico único e positivo baseado no tempo
+            const newNumericId = Math.floor(Date.now() / 1000) - 1715000000;
             
-            await addDoc(usersRef, {
+            await setDoc(userDocRef, {
               user_id: newNumericId,
               email: u.email,
               uid: u.uid,
@@ -62,11 +62,11 @@ export default function RatingFlow({ onComplete }: { onComplete: (userId: number
             });
             
             setAssignedId(newNumericId);
-            setStep('rating'); // Leva para avaliar filmes para ter dados iniciais
+            setStep('rating'); // Leva para avaliar filmes antes de finalizar
           }
         } catch (e: any) {
-          console.error("Erro ao verificar perfil:", e);
-          setAuthError("Erro ao conectar com o banco. Verifique sua conexão.");
+          console.error("Erro ao carregar perfil:", e);
+          setAuthError("Erro ao acessar dados. Tente novamente.");
         } finally {
           setCheckingProfile(false);
           setLoading(false);
