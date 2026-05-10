@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { db, auth } from '../lib/firebase';
-import { collection, addDoc, getDocs, query, where, orderBy, limit, doc, setDoc } from 'firebase/firestore';
+import { collection, addDoc, getDocs, query, where, orderBy, limit, doc, setDoc, writeBatch } from 'firebase/firestore';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Plus, 
@@ -15,7 +15,8 @@ import {
   History,
   Film,
   Loader2,
-  Check
+  Check,
+  Trash2
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -129,6 +130,31 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
       fetchData();
     } catch (e) {
       console.error("Rating error:", e);
+    }
+  };
+
+  const handleClearHistory = async () => {
+    if (!window.confirm("Tem certeza que deseja apagar todo o seu histórico de avaliações? Isso não pode ser desfeito.")) return;
+    
+    setLoading(true);
+    try {
+      const uid = Number(profile.user_id);
+      const q = query(collection(db, "ratings"), where("user_id", "==", uid));
+      const snap = await getDocs(q);
+      
+      const batch = writeBatch(db);
+      snap.docs.forEach((d) => {
+        batch.delete(d.ref);
+      });
+      await batch.commit();
+      
+      setFeedback('Histórico limpo com sucesso!');
+      setTimeout(() => setFeedback(''), 3000);
+      fetchData();
+    } catch (e) {
+      console.error("Clear history error:", e);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -302,9 +328,19 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
           </section>
 
           <section className="bg-white rounded-[2rem] p-8 shadow-sm border border-neutral-100">
-            <h3 className="text-sm font-black text-neutral-900 uppercase tracking-widest mb-6 flex items-center gap-2">
-              <History className="w-4 h-4 text-indigo-600" /> Histórico Recente
-            </h3>
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-sm font-black text-neutral-900 uppercase tracking-widest flex items-center gap-2">
+                <History className="w-4 h-4 text-indigo-600" /> Histórico Recente
+              </h3>
+              {myRatings.length > 0 && (
+                <button 
+                  onClick={handleClearHistory}
+                  className="text-[10px] font-bold text-red-400 hover:text-red-600 transition-colors flex items-center gap-1 uppercase"
+                >
+                  <Trash2 className="w-3 h-3" /> Limpar
+                </button>
+              )}
+            </div>
             <div className="space-y-4">
               {myRatings.slice(0, 5).map((rating, i) => {
                 const movie = movies.find(m => Number(m.movie_id) === Number(rating.movie_id));
