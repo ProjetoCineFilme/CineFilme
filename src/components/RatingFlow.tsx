@@ -165,7 +165,8 @@ export default function RatingFlow({ onComplete }: { onComplete: (userId: number
           await setDoc(mDocRef, movieData, { merge: true });
         }
 
-        await addDoc(ratingsRef, {
+        const ratingId = `${uid}_${mid}`;
+        await setDoc(doc(db, "ratings", ratingId), {
           user_id: uid,
           movie_id: mid,
           rating: Number(rating),

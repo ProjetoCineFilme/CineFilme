@@ -10,6 +10,8 @@ export async function carregarGrafo(): Promise<BiGraph> {
 
   // 1. Load Ratings
   const ratingsSnapshot = await getDocs(collection(db, 'ratings'));
+  console.log(`Loader: Found ${ratingsSnapshot.size} ratings`);
+  
   ratingsSnapshot.forEach((doc) => {
     const data = doc.data();
     if (data.user_id !== undefined && data.movie_id !== undefined && data.rating !== undefined) {
@@ -23,6 +25,7 @@ export async function carregarGrafo(): Promise<BiGraph> {
 
   // 2. Load Movies (Titles)
   const moviesSnapshot = await getDocs(collection(db, 'movies'));
+  console.log(`Loader: Found ${moviesSnapshot.size} movies`);
   moviesSnapshot.forEach((doc) => {
     const data = doc.data();
     if (data.movie_id !== undefined && data.title !== undefined) {

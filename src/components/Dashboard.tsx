@@ -99,13 +99,19 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
   const handleRateMovie = async (movieId: number, rating: number) => {
     try {
       const uid = Number(profile.user_id);
-      await addDoc(collection(db, "ratings"), {
+      const mid = Number(movieId);
+      const rVal = Number(rating);
+      
+      // Use setDoc with a unique ID per user/movie to avoid duplicates
+      const ratingId = `${uid}_${mid}`;
+      await setDoc(doc(db, "ratings", ratingId), {
         user_id: uid,
-        movie_id: Number(movieId),
-        rating: Number(rating),
+        movie_id: mid,
+        rating: rVal,
         user_email: user.email,
         created_at: new Date()
       });
+      
       setFeedback('Avaliação salva!');
       setTimeout(() => setFeedback(''), 3000);
       fetchData();

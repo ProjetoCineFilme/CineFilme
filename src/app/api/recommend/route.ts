@@ -16,19 +16,33 @@ export async function POST(request: Request) {
     
     // 1. Load Graph
     const grafo = await carregarGrafo();
-    
-    // Check if user exists
     const allUsers = grafo.getUsers();
+
+    // Se houver apenas 1 usuário ou nenhum, retornamos os filmes mais populares como recomendação básica
+    if (allUsers.length <= 1) {
+       const moviesRepo = grafo.getMovies();
+       const trending = moviesRepo.slice(0, Number(top_n)).map(m => ({
+         title: m.title,
+         score: 5.0
+       }));
+
+       return NextResponse.json({
+         user_id: targetUserId,
+         is_fallback: true,
+         message: "Aguardando mais usuários para recomendações personalizadas. Aqui estão os destaques!",
+         recommendations: trending
+       });
+    }
+    
+    // Se o usuário alvo não tem avaliações mas outros têm
     if (!allUsers.includes(targetUserId)) {
-      return NextResponse.json({ 
-        error: "Usuário não encontrado na base de dados.",
-        details: {
-          targetUserId,
-          foundUsersCount: allUsers.length,
-          sampleUsers: allUsers.slice(0, 5),
-          isGraphEmpty: allUsers.length === 0
-        }
-      }, { status: 404 });
+      const moviesRepo = grafo.getMovies();
+      return NextResponse.json({
+         user_id: targetUserId,
+         is_new_user: true,
+         message: "Avalie mais filmes para receber recomendações personalizadas!",
+         recommendations: moviesRepo.slice(0, Number(top_n)).map(m => ({ title: m.title, score: 0 }))
+      });
     }
 
     // 2. Calculate Similarities
