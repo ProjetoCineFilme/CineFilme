@@ -152,10 +152,21 @@ export default function RatingFlow({ onComplete }: { onComplete: (userId: number
 
     try {
       const ratingsRef = collection(db, "ratings");
+      const moviesRef = collection(db, "movies");
+
       for (const [movieId, rating] of Object.entries(ratings)) {
+        const mid = Number(movieId);
+        
+        // Ensure movie exists in collection for dashboard titles
+        const movieData = POPULAR_MOVIES.find(m => m.movie_id === mid);
+        if (movieData) {
+          const mDocRef = doc(db, "movies", mid.toString());
+          await setDoc(mDocRef, movieData, { merge: true });
+        }
+
         await addDoc(ratingsRef, {
           user_id: assignedId,
-          movie_id: Number(movieId),
+          movie_id: mid,
           rating: rating,
           user_email: user.email,
           created_at: new Date()

@@ -54,9 +54,12 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
       setMovies(moviesList);
 
       // Get my ratings
-      const q = query(collection(db, "ratings"), where("user_id", "==", profile.user_id), orderBy("created_at", "desc"));
+      const q = query(collection(db, "ratings"), where("user_id", "==", Number(profile.user_id)));
       const ratingsSnap = await getDocs(q);
-      setMyRatings(ratingsSnap.docs.map(doc => doc.data() as Rating));
+      const ratingsList = ratingsSnap.docs.map(doc => doc.data() as Rating);
+      // Sort manually to avoid index requirement
+      ratingsList.sort((a, b) => (b.created_at?.seconds || 0) - (a.created_at?.seconds || 0));
+      setMyRatings(ratingsList);
     } catch (e) {
       console.error("Dashboard data load error:", e);
     }
@@ -207,7 +210,7 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {filteredMovies.map(movie => {
-                const myRating = myRatings.find(r => r.movie_id === movie.movie_id)?.rating;
+                const myRating = myRatings.find(r => Number(r.movie_id) === Number(movie.movie_id))?.rating;
                 return (
                   <div key={movie.movie_id} className="p-4 rounded-2xl border border-neutral-50 bg-neutral-50/30 hover:border-indigo-100 hover:shadow-md transition-all group">
                     <div className="flex items-center justify-between mb-3">
@@ -281,7 +284,7 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
             </h3>
             <div className="space-y-4">
               {myRatings.slice(0, 5).map((rating, i) => {
-                const movie = movies.find(m => m.movie_id === rating.movie_id);
+                const movie = movies.find(m => Number(m.movie_id) === Number(rating.movie_id));
                 return (
                   <div key={i} className="flex items-center gap-4 group">
                     <div className="w-10 h-10 rounded-xl bg-neutral-50 flex items-center justify-center text-amber-500 font-bold border border-neutral-100 group-hover:bg-white transition-colors">
