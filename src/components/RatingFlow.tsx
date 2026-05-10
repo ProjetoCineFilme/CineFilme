@@ -132,6 +132,8 @@ export default function RatingFlow({ onComplete }: { onComplete: (userId: number
         setAuthError("Este e-mail já está em uso.");
       } else if (error.code === 'auth/weak-password') {
         setAuthError("A senha deve ter pelo menos 6 caracteres.");
+      } else if (error.code === 'auth/operation-not-allowed') {
+        setAuthError("Erro: Habilite 'E-mail/Senha' no painel Authentication do Firebase.");
       } else if (error.code === 'auth/popup-closed-by-user') {
         setAuthError("Login cancelado.");
       } else {

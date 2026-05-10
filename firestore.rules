@@ -2,33 +2,37 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Essencial para o ID sequencial (1, 2, 3...)
+    // 1. Contador Global para IDs sequenciais (1, 2, 3...)
     match /metadata/users_counter {
+      // Permite que qualquer usuário logado incremente o contador durante o cadastro
       allow read, write: if request.auth != null;
     }
 
-    // Perfis de Usuário
+    // 2. Perfis de Usuário
     match /users/{userId} {
       allow read: if request.auth != null;
       allow write: if request.auth != null && request.auth.uid == userId;
     }
 
-    // Avaliações
+    // 3. Avaliações (Ratings)
     match /ratings/{ratingId} {
       allow read: if true;
       allow create: if request.auth != null;
+      // Só o dono pode editar ou deletar sua avaliação
       allow update, delete: if request.auth != null && (
         resource.data.user_email == request.auth.token.email
       );
     }
 
-    // Filmes (Usuários podem cadastrar novos filmes agora!)
+    // 4. Filmes (Agora usuários podem ADICIONAR novos filmes)
     match /movies/{movieId} {
       allow read: if true;
       allow create: if request.auth != null;
-      allow update, delete: if false; // Por segurança, não deixamos usuários comuns editarem filmes globais
+      // Impede que usuários comuns alterem filmes já existentes por enquanto
+      allow update, delete: if false; 
     }
 
+    // Bloqueio padrão
     match /{document=**} {
       allow read, write: if false;
     }
