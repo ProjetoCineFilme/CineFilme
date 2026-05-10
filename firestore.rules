@@ -2,15 +2,18 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Regras para a coleção de usuários (Perfis)
+    // Regra para o contador global de usuários
+    match /metadata/users_counter {
+      allow read, write: if request.auth != null;
+    }
+
+    // Regras para a coleção de usuários
     match /users/{userId} {
-      // Permite ler se estiver logado
       allow read: if request.auth != null;
-      // Permite escrever apenas no seu próprio documento (UID)
       allow write: if request.auth != null && request.auth.uid == userId;
     }
 
-    // Regras para a coleção de avaliações
+    // Regras para avaliações
     match /ratings/{ratingId} {
       allow read: if true;
       allow create: if request.auth != null;
@@ -20,12 +23,10 @@ service cloud.firestore {
       );
     }
 
-    // Regras para filmes
     match /movies/{movieId} {
       allow read: if true;
     }
 
-    // Bloqueio padrão para qualquer outra coisa
     match /{document=**} {
       allow read, write: if false;
     }

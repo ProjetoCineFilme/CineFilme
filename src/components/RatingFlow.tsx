@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { db, auth } from '../lib/firebase';
-import { collection, addDoc, getDocs, query, where, doc, getDoc, setDoc } from 'firebase/firestore';
+import { collection, addDoc, getDocs, query, where, doc, getDoc, setDoc, runTransaction } from 'firebase/firestore';
 import { signInWithPopup, GoogleAuthProvider, User, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { motion, AnimatePresence } from 'motion/react';
 import { ArrowRight, Star, CheckCircle2, ChevronRight, LogIn, Mail, Lock, UserPlus, Loader2 } from 'lucide-react';
@@ -54,9 +54,18 @@ export default function RatingFlow({ onComplete }: { onComplete: (userId: number
             setTimeout(() => setStep('complete'), 400); 
           } else {
             // Novo usuário logado (Primeira vez)
-            // ID "Serial": Usamos um offset do timestamp para parecer um número de ordem
-            const appGenesis = 1715000000;
-            const newNumericId = Math.floor(Date.now() / 1000) - appGenesis;
+            // Usamos uma Transação para garantir que o ID seja sequencial e único
+            const counterRef = doc(db, "metadata", "users_counter");
+            
+            const newNumericId = await runTransaction(db, async (transaction) => {
+              const counterSnap = await transaction.get(counterRef);
+              let nextId = 1;
+              if (counterSnap.exists()) {
+                nextId = (counterSnap.data().count || 0) + 1;
+              }
+              transaction.set(counterRef, { count: nextId }, { merge: true });
+              return nextId;
+            });
             
             await setDoc(userDocRef, {
               user_id: newNumericId,
