@@ -47,31 +47,34 @@ export default function RatingFlow({ onComplete }: { onComplete: (userId: number
           });
           
           if (userDoc.exists()) {
-            // Usuário já tem um perfil
+            // Usuário já existe, recuperamos o ID profissional dele
             const userData = userDoc.data();
             setAssignedId(userData.user_id);
-            setStep('complete');
+            // Pequeno delay para o usuário ver que logou com sucesso
+            setTimeout(() => setStep('complete'), 400); 
           } else {
-            // Novo usuário logado
-            // Geramos um ID numérico que parece sequencial para o usuário
-            const newNumericId = Math.floor(Date.now() / 100) % 1000000;
+            // Novo usuário logado (Primeira vez)
+            // ID "Serial": Usamos um offset do timestamp para parecer um número de ordem
+            const appGenesis = 1715000000;
+            const newNumericId = Math.floor(Date.now() / 1000) - appGenesis;
             
             await setDoc(userDocRef, {
               user_id: newNumericId,
               email: u.email,
               uid: u.uid,
               created_at: new Date()
-            }).catch(err => {
-              console.error("Erro no setDoc:", err);
-              throw err;
             });
             
             setAssignedId(newNumericId);
-            setStep('rating'); 
+            setTimeout(() => setStep('rating'), 400);
           }
         } catch (e: any) {
-          console.error("Erro detalhado ao carregar perfil:", e);
-          setAuthError(`Erro de acesso: ${e.message || 'Verifique sua conexão'}`);
+          console.error("Erro ao processar perfil:", e);
+          if (e.code === 'permission-denied') {
+            setAuthError("Erro de Permissão: O banco ainda está liberando seu acesso. Tente clicar em entrar novamente em alguns segundos.");
+          } else {
+            setAuthError(`Erro: ${e.message || 'Verifique sua conexão'}`);
+          }
         } finally {
           setCheckingProfile(false);
           setLoading(false);

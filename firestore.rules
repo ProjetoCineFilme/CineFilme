@@ -1,29 +1,31 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Regra básica para perfis de usuário
+    
+    // Regras para a coleção de usuários (Perfis)
     match /users/{userId} {
-      // Permite que qualquer usuário logado leia perfis de outros (necessário para validações às vezes)
-      // Mas restringe a escrita apenas ao próprio dono
+      // Permite ler se estiver logado
       allow read: if request.auth != null;
+      // Permite escrever apenas no seu próprio documento (UID)
       allow write: if request.auth != null && request.auth.uid == userId;
     }
 
-    // Regra para avaliações de filmes
+    // Regras para a coleção de avaliações
     match /ratings/{ratingId} {
       allow read: if true;
-      // Permite criar avaliações se estiver logado
       allow create: if request.auth != null;
-      // Permite atualizar/deletar apenas se for o e-mail do dono (ou podemos usar UID no futuro)
-      allow update, delete: if request.auth != null && (request.auth.token.email == resource.data.user_email);
+      allow update, delete: if request.auth != null && (
+        request.resource.data.user_email == request.auth.token.email || 
+        resource.data.user_email == request.auth.token.email
+      );
     }
 
-    // Regra para filmes (público)
+    // Regras para filmes
     match /movies/{movieId} {
       allow read: if true;
     }
 
-    // Lock down default
+    // Bloqueio padrão para qualquer outra coisa
     match /{document=**} {
       allow read, write: if false;
     }
