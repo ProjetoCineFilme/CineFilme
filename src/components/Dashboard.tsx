@@ -57,7 +57,19 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
       const uid = Number(profile.user_id);
       const q = query(collection(db, "ratings"), where("user_id", "==", uid));
       const ratingsSnap = await getDocs(q);
-      const ratingsList = ratingsSnap.docs.map(doc => doc.data() as Rating);
+      
+      // Map and deduplicate by movie_id (keep latest)
+      const ratingsMap = new Map<number, Rating>();
+      ratingsSnap.docs.forEach(doc => {
+        const r = doc.data() as Rating;
+        const existing = ratingsMap.get(r.movie_id);
+        // If not exists or this one is newer
+        if (!existing || (r.created_at?.seconds || 0) > (existing.created_at?.seconds || 0)) {
+          ratingsMap.set(r.movie_id, r);
+        }
+      });
+      
+      const ratingsList = Array.from(ratingsMap.values());
       // Sort manually to avoid index requirement
       ratingsList.sort((a, b) => (b.created_at?.seconds || 0) - (a.created_at?.seconds || 0));
       setMyRatings(ratingsList);

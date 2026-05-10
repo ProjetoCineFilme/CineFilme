@@ -25,8 +25,21 @@ export class BiGraph {
     this.adicionarVertice(userId, 'user');
     this.adicionarVertice(movieId, 'movie');
 
-    this.userNodes.get(userId)?.push({ toId: movieId, weight: rating });
-    this.movieNodes.get(movieId)?.push({ toId: userId, weight: rating });
+    const userEdges = this.userNodes.get(userId)!;
+    const existingUserEdge = userEdges.find(e => e.toId === movieId);
+    if (existingUserEdge) {
+      existingUserEdge.weight = rating;
+    } else {
+      userEdges.push({ toId: movieId, weight: rating });
+    }
+
+    const movieEdges = this.movieNodes.get(movieId)!;
+    const existingMovieEdge = movieEdges.find(e => e.toId === userId);
+    if (existingMovieEdge) {
+      existingMovieEdge.weight = rating;
+    } else {
+      movieEdges.push({ toId: userId, weight: rating });
+    }
   }
 
   setMovieTitle(movieId: number, title: string) {
