@@ -40,33 +40,38 @@ export default function RatingFlow({ onComplete }: { onComplete: (userId: number
         setCheckingProfile(true);
         try {
           // Usamos o UID diretamente como ID do documento para ser 100% certeiro e rápido
-          // Isso resolve o erro de conexão/permissão
           const userDocRef = doc(db, "users", u.uid);
-          const userDoc = await getDoc(userDocRef);
+          const userDoc = await getDoc(userDocRef).catch(err => {
+            console.error("Erro no getDoc:", err);
+            throw err;
+          });
           
           if (userDoc.exists()) {
-            // Usuário já tem um perfil, recupera o ID numérico
+            // Usuário já tem um perfil
             const userData = userDoc.data();
             setAssignedId(userData.user_id);
             setStep('complete');
           } else {
-            // Novo usuário logado (Google ou Cadastro)
-            // Geramos um ID numérico único e positivo baseado no tempo
-            const newNumericId = Math.floor(Date.now() / 1000) - 1715000000;
+            // Novo usuário logado
+            // Geramos um ID numérico que parece sequencial para o usuário
+            const newNumericId = Math.floor(Date.now() / 100) % 1000000;
             
             await setDoc(userDocRef, {
               user_id: newNumericId,
               email: u.email,
               uid: u.uid,
               created_at: new Date()
+            }).catch(err => {
+              console.error("Erro no setDoc:", err);
+              throw err;
             });
             
             setAssignedId(newNumericId);
-            setStep('rating'); // Leva para avaliar filmes antes de finalizar
+            setStep('rating'); 
           }
         } catch (e: any) {
-          console.error("Erro ao carregar perfil:", e);
-          setAuthError("Erro ao acessar dados. Tente novamente.");
+          console.error("Erro detalhado ao carregar perfil:", e);
+          setAuthError(`Erro de acesso: ${e.message || 'Verifique sua conexão'}`);
         } finally {
           setCheckingProfile(false);
           setLoading(false);
