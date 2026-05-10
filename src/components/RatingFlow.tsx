@@ -330,17 +330,10 @@ export default function RatingFlow({ onComplete }: { onComplete: (userId: number
             </div>
 
             <button
-              onClick={() => assignedId && onComplete(assignedId)}
+              onClick={() => onComplete(assignedId || 0)}
               className="w-full bg-neutral-900 hover:bg-black text-white font-bold py-4 rounded-2xl transition-all flex items-center justify-center gap-2 shadow-xl shadow-neutral-200"
             >
               Ir para o Painel <ArrowRight className="w-4 h-4" />
-            </button>
-
-            <button
-              onClick={() => auth.signOut()}
-              className="mt-4 text-[10px] text-neutral-400 hover:text-red-500 font-bold uppercase tracking-widest transition-colors"
-            >
-              Sair da conta
             </button>
           </motion.div>
         )}

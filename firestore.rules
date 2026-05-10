@@ -2,29 +2,32 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Regra para o contador global de usuários
+    // Contador global para IDs sequenciais
     match /metadata/users_counter {
       allow read, write: if request.auth != null;
     }
 
-    // Regras para a coleção de usuários
+    // Perfis de Usuário
     match /users/{userId} {
       allow read: if request.auth != null;
       allow write: if request.auth != null && request.auth.uid == userId;
     }
 
-    // Regras para avaliações
+    // Avaliações (Ratings)
     match /ratings/{ratingId} {
       allow read: if true;
       allow create: if request.auth != null;
       allow update, delete: if request.auth != null && (
-        request.resource.data.user_email == request.auth.token.email || 
         resource.data.user_email == request.auth.token.email
       );
     }
 
+    // Filmes (Agora usuários podem ADICIONAR filmes)
     match /movies/{movieId} {
       allow read: if true;
+      allow create: if request.auth != null;
+      // Impede que usuários comuns deletem filmes do banco global por enquanto
+      allow update, delete: if false; 
     }
 
     match /{document=**} {
