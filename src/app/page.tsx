@@ -35,6 +35,20 @@ export default function CineFilmeApp() {
     return unsubscribe;
   }, []);
 
+  const handleComplete = async () => {
+    const u = auth.currentUser;
+    if (u) {
+      try {
+        const userDoc = await getDoc(doc(db, "users", u.uid));
+        if (userDoc.exists()) {
+          setProfile(userDoc.data());
+        }
+      } catch (e) {
+        console.error("Erro ao atualizar perfil:", e);
+      }
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
@@ -68,7 +82,7 @@ export default function CineFilmeApp() {
               </p>
             </div>
             
-            <RatingFlow onComplete={() => window.location.reload()} />
+            <RatingFlow onComplete={handleComplete} />
           </motion.div>
         ) : !profile ? (
           <motion.div 
@@ -77,7 +91,7 @@ export default function CineFilmeApp() {
             animate={{ opacity: 1, scale: 1 }}
             className="min-h-screen flex items-center justify-center p-6"
           >
-            <RatingFlow onComplete={() => window.location.reload()} />
+            <RatingFlow onComplete={handleComplete} />
           </motion.div>
         ) : (
           <motion.div 

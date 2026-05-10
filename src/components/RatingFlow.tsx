@@ -50,8 +50,7 @@ export default function RatingFlow({ onComplete }: { onComplete: (userId: number
             // Usuário já existe, recuperamos o ID profissional dele
             const userData = userDoc.data();
             setAssignedId(userData.user_id);
-            // Pequeno delay para o usuário ver que logou com sucesso
-            setTimeout(() => setStep('complete'), 400); 
+            setStep('complete');
           } else {
             // Novo usuário logado (Primeira vez)
             // Usamos uma Transação para garantir que o ID seja sequencial e único
@@ -125,14 +124,18 @@ export default function RatingFlow({ onComplete }: { onComplete: (userId: number
       // O useEffect onAuthStateChanged cuidará do redirecionamento
     } catch (error: any) {
       setLoading(false);
-      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+      console.error("Auth Error:", error.code, error.message);
+      
+      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential' || error.code === 'auth/invalid-email') {
         setAuthError("E-mail ou senha incorretos.");
       } else if (error.code === 'auth/email-already-in-use') {
         setAuthError("Este e-mail já está em uso.");
       } else if (error.code === 'auth/weak-password') {
         setAuthError("A senha deve ter pelo menos 6 caracteres.");
+      } else if (error.code === 'auth/popup-closed-by-user') {
+        setAuthError("Login cancelado.");
       } else {
-        setAuthError("Erro na autenticação. Tente novamente.");
+        setAuthError(`Erro: ${error.message || "Tente novamente mais tarde."}`);
       }
     }
   };
