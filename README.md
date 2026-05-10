@@ -1,32 +1,23 @@
-# CineFilme — Sistema de Recomendação de Filmes baseado em Grafos
+# CineFilme
+Sistema de recomendação de filmes inteligente que utiliza algoritmos de grafos e filtragem colaborativa para sugerir novos títulos baseados nas preferências do usuário.
+A plataforma conecta cinéfilos, permitindo avaliações e descoberta de novos conteúdos através de similaridade matemática.
 
-Este projeto é um MVP de um sistema de recomendação que utiliza filtragem colaborativa baseada em usuários (User-User Collaborative Filtering) implementada através de uma estrutura de grafo bipartido.
+**Site:** [https://cine-filme.vercel.app](https://cine-filme.vercel.app)
+
+## Estrutura do Projeto
+- `src/core/`: Implementação do Grafo Bipartido e Similaridade de Cosseno.
+- `src/algorithms/`: Algoritmos de busca (BFS) e ranqueamento (Weighted Score).
+- `src/io/`: Módulo de carregamento e interface de dados.
+- `src/app/api/`: Rotas de backend para processamento dos algoritmos.
+- `tests/`: Suíte de testes unitários.
+
+## Algoritmos Utilizados
+1. **BiGraph**: Modelagem de dados entre usuários e itens.
+2. **Cosine Similarity**: Cálculo de proximidade entre vetores de avaliação.
+3. **BFS (Depth 2)**: Exploração de vizinhança para expansão de candidatos.
+4. **Weighted Ranking**: Predição de nota baseada na similaridade dos vizinhos.
 
 ## Como rodar localmente
-
-1. Instale as dependências:
-   ```bash
-   npm install
-   ```
-2. Configure o Firebase:
-   - Copie o arquivo `.env.local.example` para `.env.local`
-   - Preencha as credenciais do seu projeto Firebase ( Firestore habilitado ).
-   - Certifique-se de ter as coleções `ratings` e `movies` no seu banco.
-
-3. Execute o servidor de desenvolvimento:
-   ```bash
-   npm run dev
-   ```
-   Acesse: `http://localhost:3000`
-
-## Algoritmos
-- **Similaridade de Cosseno**: Mede a proximidade entre perfis de usuários.
-- **BFS (Breadth-First Search)**: Explora o grafo para encontrar filmes candidatos.
-- **Ranking Ponderado**: Calcula a nota estimada baseada na opinião de vizinhos similares.
-
-## Tecnologias
-- Framework: Express + React (Vite)
-- Banco de dados: Firebase Firestore
-- Estilização: Tailwind CSS
-- Animações: Motion
-- Testes: Vitest
+1. Instale as dependências: `npm install`
+2. Configure o `.env` com as chaves do Firebase.
+3. Execute: `npm run dev`
