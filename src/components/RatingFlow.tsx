@@ -49,7 +49,7 @@ export default function RatingFlow({ onComplete }: { onComplete: (userId: number
           if (userDoc.exists()) {
             // Usuário já existe, recuperamos o ID profissional dele
             const userData = userDoc.data();
-            setAssignedId(userData.user_id);
+            setAssignedId(Number(userData.user_id));
             setStep('complete');
           } else {
             // Novo usuário logado (Primeira vez)
@@ -67,13 +67,13 @@ export default function RatingFlow({ onComplete }: { onComplete: (userId: number
             });
             
             await setDoc(userDocRef, {
-              user_id: newNumericId,
+              user_id: Number(newNumericId),
               email: u.email,
               uid: u.uid,
               created_at: new Date()
             });
             
-            setAssignedId(newNumericId);
+            setAssignedId(Number(newNumericId));
             setTimeout(() => setStep('rating'), 400);
           }
         } catch (e: any) {
@@ -156,6 +156,7 @@ export default function RatingFlow({ onComplete }: { onComplete: (userId: number
 
       for (const [movieId, rating] of Object.entries(ratings)) {
         const mid = Number(movieId);
+        const uid = Number(assignedId);
         
         // Ensure movie exists in collection for dashboard titles
         const movieData = POPULAR_MOVIES.find(m => m.movie_id === mid);
@@ -165,9 +166,9 @@ export default function RatingFlow({ onComplete }: { onComplete: (userId: number
         }
 
         await addDoc(ratingsRef, {
-          user_id: assignedId,
+          user_id: uid,
           movie_id: mid,
-          rating: rating,
+          rating: Number(rating),
           user_email: user.email,
           created_at: new Date()
         });

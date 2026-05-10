@@ -40,7 +40,11 @@ function RecommendationsList() {
         const data = await response.json();
 
         if (!response.ok) {
-          throw new Error(data.error || 'Falha ao carregar recomendações');
+          let msg = data.error || 'Falha ao carregar recomendações';
+          if (data.details) {
+             msg += ` (DB: ${data.details.foundUsersCount} users)`;
+          }
+          throw new Error(msg);
         }
 
         setRecommendations(data.recommendations || []);
@@ -70,6 +74,7 @@ function RecommendationsList() {
         <AlertCircle className="w-12 h-12 text-red-500 mb-4" />
         <h2 className="text-lg font-bold text-red-900 mb-2">Erro ao Processar</h2>
         <p className="text-red-700 max-w-md">{error}</p>
+        
         <button 
           onClick={() => router.push('/')}
           className="mt-6 bg-red-600 text-white px-6 py-2 rounded-xl font-medium hover:bg-red-700 transition-colors"

@@ -54,7 +54,8 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
       setMovies(moviesList);
 
       // Get my ratings
-      const q = query(collection(db, "ratings"), where("user_id", "==", Number(profile.user_id)));
+      const uid = Number(profile.user_id);
+      const q = query(collection(db, "ratings"), where("user_id", "==", uid));
       const ratingsSnap = await getDocs(q);
       const ratingsList = ratingsSnap.docs.map(doc => doc.data() as Rating);
       // Sort manually to avoid index requirement
@@ -97,10 +98,11 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
 
   const handleRateMovie = async (movieId: number, rating: number) => {
     try {
+      const uid = Number(profile.user_id);
       await addDoc(collection(db, "ratings"), {
-        user_id: profile.user_id,
-        movie_id: movieId,
-        rating: rating,
+        user_id: uid,
+        movie_id: Number(movieId),
+        rating: Number(rating),
         user_email: user.email,
         created_at: new Date()
       });
@@ -218,17 +220,20 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
                       <span className="text-[9px] text-neutral-300 font-mono">#{movie.movie_id}</span>
                     </div>
                     <div className="flex gap-1">
-                      {[1, 2, 3, 4, 5].map(star => (
-                        <button 
-                          key={star}
-                          onClick={() => handleRateMovie(movie.movie_id, star)}
-                          className={`p-1 transition-all hover:scale-125 ${
-                            (myRating || 0) >= star ? 'text-amber-400' : 'text-neutral-200 hover:text-amber-200'
-                          }`}
-                        >
-                          <Star className={`w-4 h-4 ${(myRating || 0) >= star ? 'fill-amber-400' : ''}`} />
-                        </button>
-                      ))}
+                      {[1, 2, 3, 4, 5].map(star => {
+                        const active = (myRating || 0) >= star;
+                        return (
+                          <button 
+                            key={star}
+                            onClick={() => handleRateMovie(movie.movie_id, star)}
+                            className={`p-1 transition-all hover:scale-125 ${
+                              active ? 'text-amber-400' : 'text-neutral-200 hover:text-amber-200'
+                            }`}
+                          >
+                            <Star className={`w-4 h-4 ${active ? 'fill-amber-400' : ''}`} />
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
                 );

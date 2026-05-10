@@ -20,7 +20,15 @@ export async function POST(request: Request) {
     // Check if user exists
     const allUsers = grafo.getUsers();
     if (!allUsers.includes(targetUserId)) {
-      return NextResponse.json({ error: "Usuário não encontrado na base de dados." }, { status: 404 });
+      return NextResponse.json({ 
+        error: "Usuário não encontrado na base de dados.",
+        details: {
+          targetUserId,
+          foundUsersCount: allUsers.length,
+          sampleUsers: allUsers.slice(0, 5),
+          isGraphEmpty: allUsers.length === 0
+        }
+      }, { status: 404 });
     }
 
     // 2. Calculate Similarities
