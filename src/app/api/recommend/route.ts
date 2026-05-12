@@ -75,18 +75,19 @@ export async function POST(request: Request) {
     // 6. Return Top N
     let topNRecommendations = allRecommendations.slice(0, Number(top_n));
 
-    // Fallback: se não houver recomendações personalizadas, pegamos filmes populares aleatórios
-    // Aprimoramento: se o usuário tem gêneros preferidos, filtramos por eles
+    // Fallback: se não houver recomendações personalizadas, pegamos filmes populares do mesmo gênero
     if (topNRecommendations.length === 0) {
+      const normalize = (s: string) => s.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      
       const userRatings = grafo.consultarAdjacencia(targetUserId, 'user');
       const watchedIds = new Set(userRatings.map(r => String(r.toId)));
-      const myGenres = new Set(userRatings.map(r => grafo.getMovieGenre(r.toId).trim().toLowerCase()));
+      const myGenres = new Set(userRatings.map(r => normalize(grafo.getMovieGenre(r.toId))));
       
       const moviesRepo = grafo.getMovies();
       const genreFallback = moviesRepo
         .filter(mid => {
           const sMid = String(mid);
-          const genre = grafo.getMovieGenre(mid).trim().toLowerCase();
+          const genre = normalize(grafo.getMovieGenre(mid));
           return !watchedIds.has(sMid) && myGenres.has(genre);
         })
         .slice(0, Number(top_n));

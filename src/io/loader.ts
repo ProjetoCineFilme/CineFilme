@@ -8,20 +8,24 @@ import { BiGraph } from '../core/graph';
 export async function carregarGrafo(): Promise<BiGraph> {
   const grafo = new BiGraph();
 
-  // 1. Load Ratings
+  // 1. Load Ratings (Deduplicate to keep only latest per user-movie)
   const ratingsSnapshot = await getDocs(collection(db, 'ratings'));
-  console.log(`Loader: Found ${ratingsSnapshot.size} ratings`);
+  console.log(`Loader: Found ${ratingsSnapshot.size} raw ratings`);
+  
+  const uniqueRatings = new Map<string, { uid: string, mid: string, val: number }>();
   
   ratingsSnapshot.forEach((doc) => {
     const data = doc.data();
     if (data.user_id !== undefined && data.movie_id !== undefined && data.rating !== undefined) {
-      // Permitimos strings ou numbers aqui
-      grafo.adicionarAresta(
-        data.user_id,
-        data.movie_id,
-        Number(data.rating)
-      );
+      const uid = String(data.user_id);
+      const mid = String(data.movie_id);
+      const key = `${uid}_${mid}`;
+      uniqueRatings.set(key, { uid, mid, val: Number(data.rating) });
     }
+  });
+
+  uniqueRatings.forEach(({ uid, mid, val }) => {
+    grafo.adicionarAresta(uid, mid, val);
   });
 
   // 2. Load Movies (Titles & Genres)
@@ -31,7 +35,7 @@ export async function carregarGrafo(): Promise<BiGraph> {
     const data = doc.data();
     if (data.movie_id !== undefined) {
       const mid = data.movie_id;
-      // Add node even if no ratings yet
+      // Adiciona o nó do filme mesmo que não tenha avaliações ainda
       grafo.adicionarVertice(mid, 'movie');
       
       if (data.title) {
