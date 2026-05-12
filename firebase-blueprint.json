@@ -17,7 +17,8 @@
       "type": "object",
       "properties": {
         "movie_id": { "type": "integer", "description": "ID of the movie" },
-        "title": { "type": "string", "description": "Title of the movie" }
+        "title": { "type": "string", "description": "Title of the movie" },
+        "genre": { "type": "string", "description": "Primary genre of the movie" }
       },
       "required": ["movie_id", "title"]
     },

@@ -31,6 +31,9 @@ export async function carregarGrafo(): Promise<BiGraph> {
     const data = doc.data();
     if (data.movie_id !== undefined && data.title !== undefined) {
       grafo.setMovieTitle(data.movie_id, data.title);
+      if (data.genre) {
+        grafo.setMovieGenre(data.movie_id, data.genre);
+      }
     }
   });
 

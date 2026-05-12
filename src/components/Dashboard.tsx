@@ -23,7 +23,10 @@ import Link from 'next/link';
 interface Movie {
   movie_id: number;
   title: string;
+  genre?: string;
 }
+
+const GENRES = ["Ação", "Aventura", "Comédia", "Drama", "Ficção Científica", "Fantasia", "Terror", "Suspense", "Animação", "Documentário", "Romance", "Crime", "Super-herói", "Guerra", "Musical"];
 
 interface Rating {
   movie_id: number;
@@ -37,6 +40,7 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
   const [searchTerm, setSearchTerm] = useState('');
   const [isAddingMovie, setIsAddingMovie] = useState(false);
   const [newMovieTitle, setNewMovieTitle] = useState('');
+  const [newMovieGenre, setNewMovieGenre] = useState('Ação');
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState('');
 
@@ -94,11 +98,13 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
       await addDoc(collection(db, "movies"), {
         movie_id: nextId,
         title: newMovieTitle.trim(),
+        genre: newMovieGenre,
         created_at: new Date(),
         added_by: user.uid
       });
 
       setNewMovieTitle('');
+      setNewMovieGenre('Ação');
       setIsAddingMovie(false);
       setFeedback('Filme adicionado com sucesso!');
       setTimeout(() => setFeedback(''), 3000);
@@ -222,20 +228,32 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
                   exit={{ opacity: 0, height: 0 }}
                   className="mb-8 p-6 bg-neutral-50 rounded-2xl border border-neutral-100 overflow-hidden"
                 >
-                  <label className="block text-[10px] font-black text-neutral-400 uppercase tracking-widest mb-2">Nome do Filme</label>
-                  <div className="flex gap-2">
-                    <input 
-                      autoFocus
-                      type="text"
-                      value={newMovieTitle}
-                      onChange={(e) => setNewMovieTitle(e.target.value)}
-                      placeholder="Ex: Interestelar 2..."
-                      className="flex-1 px-4 py-3 rounded-xl border border-neutral-200 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none"
-                    />
+                  <div className="flex flex-col md:flex-row gap-4 items-end">
+                    <div className="flex-1 w-full">
+                      <label className="block text-[10px] font-black text-neutral-400 uppercase tracking-widest mb-2">Nome do Filme</label>
+                      <input 
+                        autoFocus
+                        type="text"
+                        value={newMovieTitle}
+                        onChange={(e) => setNewMovieTitle(e.target.value)}
+                        placeholder="Ex: Interestelar 2..."
+                        className="w-full px-4 py-3 rounded-xl border border-neutral-200 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none"
+                      />
+                    </div>
+                    <div className="w-full md:w-48">
+                      <label className="block text-[10px] font-black text-neutral-400 uppercase tracking-widest mb-2">Gênero</label>
+                      <select 
+                        value={newMovieGenre}
+                        onChange={(e) => setNewMovieGenre(e.target.value)}
+                        className="w-full px-4 py-3 rounded-xl border border-neutral-200 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none bg-white font-bold text-neutral-700"
+                      >
+                        {GENRES.map(g => <option key={g} value={g}>{g}</option>)}
+                      </select>
+                    </div>
                     <button 
                       onClick={handleAddMovie}
                       disabled={loading}
-                      className="bg-neutral-900 text-white px-6 py-3 rounded-xl font-bold hover:bg-black transition-all disabled:opacity-50"
+                      className="w-full md:w-auto bg-neutral-900 text-white px-8 py-3 rounded-xl font-bold hover:bg-black transition-all disabled:opacity-50 h-[50px]"
                     >
                       {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Salvar'}
                     </button>

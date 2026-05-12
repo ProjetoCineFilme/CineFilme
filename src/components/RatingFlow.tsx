@@ -8,14 +8,14 @@ import { motion, AnimatePresence } from 'motion/react';
 import { ArrowRight, Star, CheckCircle2, ChevronRight, LogIn, Mail, Lock, UserPlus, Loader2 } from 'lucide-react';
 
 const POPULAR_MOVIES = [
-  { movie_id: 101, title: "O Poderoso Chefão" },
-  { movie_id: 102, title: "Pulp Fiction" },
-  { movie_id: 103, title: "Interstellar" },
-  { movie_id: 104, title: "Batman: O Cavaleiro das Trevas" },
-  { movie_id: 105, title: "Clube da Luta" },
-  { movie_id: 106, title: "Matrix" },
-  { movie_id: 107, title: "Parasita" },
-  { movie_id: 108, title: "Cidade de Deus" },
+  { movie_id: 101, title: "O Poderoso Chefão", genre: "Crime" },
+  { movie_id: 102, title: "Pulp Fiction", genre: "Crime" },
+  { movie_id: 103, title: "Interstellar", genre: "Ficção Científica" },
+  { movie_id: 104, title: "Batman: O Cavaleiro das Trevas", genre: "Super-herói" },
+  { movie_id: 105, title: "Clube da Luta", genre: "Drama" },
+  { movie_id: 106, title: "Matrix", genre: "Ficção Científica" },
+  { movie_id: 107, title: "Parasita", genre: "Suspense" },
+  { movie_id: 108, title: "Cidade de Deus", genre: "Crime" },
 ];
 
 export default function RatingFlow({ onComplete }: { onComplete: (userId: any) => void }) {
@@ -168,7 +168,12 @@ export default function RatingFlow({ onComplete }: { onComplete: (userId: any) =
         const movieData = POPULAR_MOVIES.find(m => String(m.movie_id) === String(mid));
         if (movieData) {
           const mDocRef = doc(db, "movies", String(mid));
-          await setDoc(mDocRef, movieData, { merge: true });
+          await setDoc(mDocRef, {
+            movie_id: mid,
+            title: movieData.title,
+            genre: movieData.genre,
+            updated_at: new Date()
+          }, { merge: true });
         }
 
         const ratingId = `${uid}_${mid}`;

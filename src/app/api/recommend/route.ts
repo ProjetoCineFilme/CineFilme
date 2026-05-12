@@ -76,13 +76,33 @@ export async function POST(request: Request) {
     let topNRecommendations = allRecommendations.slice(0, Number(top_n));
 
     // Fallback: se não houver recomendações personalizadas, pegamos filmes populares aleatórios
+    // Aprimoramento: se o usuário tem gêneros preferidos, filtramos por eles
     if (topNRecommendations.length === 0) {
+      const userRatings = grafo.consultarAdjacencia(targetUserId, 'user');
+      const watchedIds = new Set(userRatings.map(r => String(r.toId)));
+      const myGenres = new Set(userRatings.map(r => grafo.getMovieGenre(r.toId)));
+      
       const moviesRepo = grafo.getMovies();
-      topNRecommendations = moviesRepo.slice(0, Number(top_n)).map(mid => ({
-        movieId: mid,
-        title: grafo.getMovieTitle(mid),
-        score: 0 // Indica que é uma sugestão de base, não uma predição exata
-      }));
+      const genreFallback = moviesRepo
+        .filter(mid => !watchedIds.has(String(mid)) && myGenres.has(grafo.getMovieGenre(mid)))
+        .slice(0, Number(top_n));
+      
+      if (genreFallback.length > 0) {
+        topNRecommendations = genreFallback.map(mid => ({
+          movieId: mid,
+          title: grafo.getMovieTitle(mid),
+          score: 0.1 // Pontuação baixa mas positiva por ser do mesmo gênero
+        }));
+      } else {
+        topNRecommendations = moviesRepo
+          .filter(mid => !watchedIds.has(String(mid)))
+          .slice(0, Number(top_n))
+          .map(mid => ({
+            movieId: mid,
+            title: grafo.getMovieTitle(mid),
+            score: 0
+          }));
+      }
     }
 
     return NextResponse.json({
