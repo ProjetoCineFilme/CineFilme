@@ -24,8 +24,10 @@ interface Movie {
   movie_id: number;
   title: string;
   genre?: string;
+  added_by?: string;
 }
 
+const STANDARD_MOVIE_IDS = [101, 102, 103, 104, 105, 106, 107, 108];
 const GENRES = ["Ação", "Aventura", "Comédia", "Drama", "Ficção Científica", "Fantasia", "Terror", "Suspense", "Animação", "Documentário", "Romance", "Crime", "Super-herói", "Guerra", "Musical"];
 
 interface Rating {
@@ -57,7 +59,8 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
         return { 
           movie_id: data.movie_id, 
           title: data.title || "Filme sem título",
-          genre: data.genre || "Geral"
+          genre: data.genre || "Geral",
+          added_by: data.added_by
         };
       });
       setMovies(moviesList);
@@ -110,8 +113,8 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
       setNewMovieTitle('');
       setNewMovieGenre('Ação');
       setIsAddingMovie(false);
-      setFeedback('Filme adicionado com sucesso!');
-      setTimeout(() => setFeedback(''), 3000);
+      setFeedback('Filme cadastrado! Avalie-o para melhorar as recomendações.');
+      setTimeout(() => setFeedback(''), 5000);
       fetchData();
     } catch (e) {
       console.error("Add movie error:", e);
@@ -171,10 +174,22 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
     }
   };
 
-  const filteredMovies = movies.filter(m => 
-    (m.title || "").toLowerCase().includes((searchTerm || "").toLowerCase()) ||
-    (m.genre || "").toLowerCase().includes((searchTerm || "").toLowerCase())
-  ).slice(0, 10);
+  const filteredMovies = movies.filter(m => {
+    // Show if:
+    // 1. It's a standard movie (101-108)
+    const isStandard = STANDARD_MOVIE_IDS.includes(Number(m.movie_id));
+    // 2. Added by me
+    const addedByMe = m.added_by === user.uid;
+    // 3. Rated by me
+    const ratedByMe = myRatings.some(r => String(r.movie_id) === String(m.movie_id));
+    
+    if (!isStandard && !addedByMe && !ratedByMe) return false;
+
+    const matchesSearch = (m.title || "").toLowerCase().includes((searchTerm || "").toLowerCase()) ||
+                         (m.genre || "").toLowerCase().includes((searchTerm || "").toLowerCase());
+    
+    return matchesSearch;
+  }).slice(0, 12);
 
   return (
     <div className="max-w-6xl mx-auto p-6 md:p-12">

@@ -31,7 +31,7 @@ export function calcularSimilaridade(userA: NodeId, userB: NodeId, grafo: BiGrap
   const getGenreProfile = (ratings: any[]) => {
     const profile = new Map<string, number>();
     for (const edge of ratings) {
-      const genre = grafo.getMovieGenre(edge.toId);
+      const genre = grafo.getMovieGenre(edge.toId).trim().toLowerCase();
       profile.set(genre, (profile.get(genre) || 0) + edge.weight);
     }
     return profile;

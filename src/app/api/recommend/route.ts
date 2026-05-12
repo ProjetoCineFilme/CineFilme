@@ -80,11 +80,15 @@ export async function POST(request: Request) {
     if (topNRecommendations.length === 0) {
       const userRatings = grafo.consultarAdjacencia(targetUserId, 'user');
       const watchedIds = new Set(userRatings.map(r => String(r.toId)));
-      const myGenres = new Set(userRatings.map(r => grafo.getMovieGenre(r.toId)));
+      const myGenres = new Set(userRatings.map(r => grafo.getMovieGenre(r.toId).trim().toLowerCase()));
       
       const moviesRepo = grafo.getMovies();
       const genreFallback = moviesRepo
-        .filter(mid => !watchedIds.has(String(mid)) && myGenres.has(grafo.getMovieGenre(mid)))
+        .filter(mid => {
+          const sMid = String(mid);
+          const genre = grafo.getMovieGenre(mid).trim().toLowerCase();
+          return !watchedIds.has(sMid) && myGenres.has(genre);
+        })
         .slice(0, Number(top_n));
       
       if (genreFallback.length > 0) {

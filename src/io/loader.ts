@@ -24,15 +24,21 @@ export async function carregarGrafo(): Promise<BiGraph> {
     }
   });
 
-  // 2. Load Movies (Titles)
+  // 2. Load Movies (Titles & Genres)
   const moviesSnapshot = await getDocs(collection(db, 'movies'));
   console.log(`Loader: Found ${moviesSnapshot.size} movies`);
   moviesSnapshot.forEach((doc) => {
     const data = doc.data();
-    if (data.movie_id !== undefined && data.title !== undefined) {
-      grafo.setMovieTitle(data.movie_id, data.title);
+    if (data.movie_id !== undefined) {
+      const mid = data.movie_id;
+      // Add node even if no ratings yet
+      grafo.adicionarVertice(mid, 'movie');
+      
+      if (data.title) {
+        grafo.setMovieTitle(mid, data.title);
+      }
       if (data.genre) {
-        grafo.setMovieGenre(data.movie_id, data.genre);
+        grafo.setMovieGenre(mid, data.genre);
       }
     }
   });
