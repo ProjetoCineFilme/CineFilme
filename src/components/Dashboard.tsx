@@ -103,6 +103,18 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
   const handleAddMovie = async () => {
     if (!newMovieTitle.trim()) return;
     setLoading(true);
+
+    const handleFirestoreError = (error: any, operationType: string, path: string | null) => {
+      const errInfo = {
+        error: error instanceof Error ? error.message : String(error),
+        authInfo: { userId: auth.currentUser?.uid, email: auth.currentUser?.email },
+        operationType,
+        path
+      };
+      console.error('Firestore Error:', JSON.stringify(errInfo));
+      throw new Error(JSON.stringify(errInfo));
+    };
+
     try {
       const normalizedNew = normalizeTitle(newMovieTitle);
       const duplicate = movies.find(m => normalizeTitle(m.title) === normalizedNew);
@@ -137,36 +149,48 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
       setFeedback('Filme cadastrado! Avalie-o para melhorar as recomendações.');
       setTimeout(() => setFeedback(''), 5000);
       fetchData();
-    } catch (e) {
+    } catch (e: any) {
       console.error("Add movie error:", e);
+      setFeedback(`Erro ao adicionar: ${e.message}`);
     } finally {
-      setLoading(true); // Manter carregando até o fetchData() completar se possível
-      setTimeout(() => fetchData(), 500); // Dar um tempo pro Firestore indexar
+      setTimeout(() => fetchData(), 500); 
       setLoading(false);
     }
   };
 
   const handleRateMovie = async (movieId: any, rating: number) => {
+    const handleFirestoreError = (error: any, operationType: string, path: string | null) => {
+      const errInfo = {
+        error: error instanceof Error ? error.message : String(error),
+        authInfo: { userId: auth.currentUser?.uid, email: auth.currentUser?.email },
+        operationType,
+        path
+      };
+      console.error('Firestore Error:', JSON.stringify(errInfo));
+      throw new Error(JSON.stringify(errInfo));
+    };
+
     try {
       const uid = profile.user_id;
       const mid = movieId;
       const rVal = Number(rating);
       
-      // Use setDoc with a unique ID per user/movie to avoid duplicates
       const ratingId = `${uid}_${mid}`;
       await setDoc(doc(db, "ratings", ratingId), {
         user_id: uid,
         movie_id: mid,
         rating: rVal,
         user_email: user.email,
+        uid: user.uid,
         created_at: new Date()
       });
       
       setFeedback('Avaliação salva!');
       setTimeout(() => setFeedback(''), 3000);
       fetchData();
-    } catch (e) {
+    } catch (e: any) {
       console.error("Rating error:", e);
+      setFeedback(`Erro ao avaliar: ${e.message}`);
     }
   };
 
@@ -174,6 +198,18 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
     if (!window.confirm("Tem certeza que deseja apagar todo o seu histórico de avaliações? Isso não pode ser desfeito.")) return;
     
     setLoading(true);
+
+    const handleFirestoreError = (error: any, operationType: string, path: string | null) => {
+      const errInfo = {
+        error: error instanceof Error ? error.message : String(error),
+        authInfo: { userId: auth.currentUser?.uid, email: auth.currentUser?.email },
+        operationType,
+        path
+      };
+      console.error('Firestore Error:', JSON.stringify(errInfo));
+      throw new Error(JSON.stringify(errInfo));
+    };
+
     try {
       const uid = profile.user_id;
       const q = query(collection(db, "ratings"), where("user_id", "==", uid));
@@ -183,13 +219,14 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
       snap.docs.forEach((d) => {
         batch.delete(d.ref);
       });
-      await batch.commit();
+      await batch.commit().catch(e => handleFirestoreError(e, 'delete', 'ratings/BATCH'));
       
       setFeedback('Histórico limpo com sucesso!');
       setTimeout(() => setFeedback(''), 3000);
       fetchData();
-    } catch (e) {
+    } catch (e: any) {
       console.error("Clear history error:", e);
+      setFeedback(`Erro ao limpar histórico: ${e.message}`);
     } finally {
       setLoading(false);
     }

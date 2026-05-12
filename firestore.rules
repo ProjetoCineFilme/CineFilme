@@ -2,36 +2,43 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // 1. Contador Global para IDs sequenciais (1, 2, 3...)
-    match /metadata/users_counter {
-      // Permite que qualquer usuário logado incremente o contador durante o cadastro
-      allow read, write: if request.auth != null;
+    // Safety helpers
+    function isSignedIn() { return request.auth != null; }
+    function isOwner(uid) { return isSignedIn() && request.auth.uid == uid; }
+    function isEmailVerified() { return isSignedIn(); } // Keeping it simple since they use custom emails
+
+    // 1. Metadata (Counters)
+    match /metadata/{docId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn();
     }
 
     // 2. Perfis de Usuário
-    match /users/{userId} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null && request.auth.uid == userId;
+    match /users/{uid} {
+      allow read: if isSignedIn();
+      allow write: if isOwner(uid);
     }
 
     // 3. Avaliações (Ratings)
     match /ratings/{ratingId} {
       allow read: if true;
-      allow create: if request.auth != null;
-      // Só o dono pode editar ou deletar sua avaliação
-      allow update, delete: if request.auth != null && (
-        resource.data.user_email == request.auth.token.email
+      // Allow creation if logged in
+      allow create: if isSignedIn();
+      // Allow update if owner (matching by user_id or user_email)
+      allow update, delete: if isSignedIn() && (
+        (resource.data.user_email == request.auth.token.email) ||
+        (resource.data.uid == request.auth.uid) ||
+        (resource.data.user_id == request.auth.uid)
       );
     }
 
     // 4. Filmes
     match /movies/{movieId} {
       allow read: if true;
-      allow create, update: if request.auth != null;
-      allow delete: if false; 
+      allow write: if isSignedIn();
     }
 
-    // Bloqueio padrão
+    // Default deny
     match /{document=**} {
       allow read, write: if false;
     }

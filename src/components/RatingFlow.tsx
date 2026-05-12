@@ -160,10 +160,22 @@ export default function RatingFlow({ onComplete }: { onComplete: (userId: any) =
     setLoading(true);
     setSubmitError('');
 
-    try {
-      const ratingsRef = collection(db, "ratings");
-      const moviesRef = collection(db, "movies");
+    const handleFirestoreError = (error: any, operationType: string, path: string | null) => {
+      const errInfo = {
+        error: error instanceof Error ? error.message : String(error),
+        authInfo: {
+          userId: auth.currentUser?.uid,
+          email: auth.currentUser?.email,
+          emailVerified: auth.currentUser?.emailVerified,
+        },
+        operationType,
+        path
+      };
+      console.error('Firestore Error:', JSON.stringify(errInfo));
+      throw new Error(JSON.stringify(errInfo));
+    };
 
+    try {
       for (const [movieId, rating] of Object.entries(ratings)) {
         const mid = movieId;
         const uid = assignedId;
@@ -171,29 +183,47 @@ export default function RatingFlow({ onComplete }: { onComplete: (userId: any) =
         // Ensure movie exists in collection for dashboard titles
         const movieData = POPULAR_MOVIES.find(m => String(m.movie_id) === String(mid));
         if (movieData) {
-          const mDocRef = doc(db, "movies", String(mid));
-          await setDoc(mDocRef, {
-            movie_id: mid,
-            title: movieData.title,
-            genre: movieData.genre,
-            updated_at: new Date()
-          }, { merge: true });
+          const mPath = `movies/${String(mid)}`;
+          try {
+            const mDocRef = doc(db, "movies", String(mid));
+            await setDoc(mDocRef, {
+              movie_id: mid,
+              title: movieData.title,
+              genre: movieData.genre,
+              updated_at: new Date()
+            }, { merge: true });
+          } catch (e) {
+            handleFirestoreError(e, 'write', mPath);
+          }
         }
 
-        const ratingId = `${uid}_${mid}`;
-        await setDoc(doc(db, "ratings", ratingId), {
-          user_id: uid,
-          movie_id: mid,
-          rating: Number(rating),
-          user_email: user.email,
-          created_at: new Date()
-        });
+        const rId = `${uid}_${mid}`;
+        const rPath = `ratings/${rId}`;
+        try {
+          await setDoc(doc(db, "ratings", rId), {
+            user_id: uid,
+            movie_id: mid,
+            rating: Number(rating),
+            user_email: user.email,
+            uid: user.uid,
+            created_at: new Date()
+          });
+        } catch (e) {
+          handleFirestoreError(e, 'write', rPath);
+        }
       }
 
       setStep('complete');
     } catch (error: any) {
       console.error("Error saving ratings", error);
-      setSubmitError(`Erro ao salvar: ${error.message || 'Verifique sua conexão'}`);
+      let displayError = error.message;
+      try {
+        const parsed = JSON.parse(error.message);
+        displayError = parsed.error;
+      } catch (e) {
+        // Not a JSON error
+      }
+      setSubmitError(`Erro ao salvar: ${displayError}`);
     } finally {
       setLoading(false);
     }

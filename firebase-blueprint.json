@@ -1,51 +1,67 @@
 {
   "entities": {
-    "rating": {
+    "User": {
+      "title": "User",
+      "description": "User profile linking Firebase Auth UID to a numeric sequence ID",
+      "type": "object",
+      "properties": {
+        "user_id": { "type": "integer" },
+        "email": { "type": "string" },
+        "uid": { "type": "string" },
+        "created_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["user_id", "uid", "email"]
+    },
+    "Rating": {
       "title": "Rating",
       "description": "A user's rating for a movie",
       "type": "object",
       "properties": {
-        "user_id": { "type": "integer", "description": "ID of the user" },
-        "movie_id": { "type": "integer", "description": "ID of the movie" },
-        "rating": { "type": "number", "description": "Rating value (1-5)" }
+        "user_id": { "type": "integer" },
+        "movie_id": { "type": "string" },
+        "rating": { "type": "integer" },
+        "user_email": { "type": "string" },
+        "created_at": { "type": "string", "format": "date-time" }
       },
       "required": ["user_id", "movie_id", "rating"]
     },
-    "movie": {
+    "Movie": {
       "title": "Movie",
-      "description": "Movie details",
+      "description": "Movie metadata",
       "type": "object",
       "properties": {
-        "movie_id": { "type": "integer", "description": "ID of the movie" },
-        "title": { "type": "string", "description": "Title of the movie" },
-        "genre": { "type": "string", "description": "Primary genre of the movie" }
+        "movie_id": { "type": "string" },
+        "title": { "type": "string" },
+        "genre": { "type": "string" },
+        "updated_at": { "type": "string", "format": "date-time" }
       },
       "required": ["movie_id", "title"]
     },
-    "user": {
-      "title": "User Profile",
-      "description": "Mapping from auth to numeric ID",
+    "Metadata": {
+      "title": "Metadata",
+      "description": "System metadata like counters",
       "type": "object",
       "properties": {
-        "user_id": { "type": "integer", "description": "Numeric ID for graph" },
-        "email": { "type": "string", "description": "User email" },
-        "uid": { "type": "string", "description": "Firebase Auth UID" }
-      },
-      "required": ["user_id", "email", "uid"]
+        "count": { "type": "integer" }
+      }
     }
   },
   "firestore": {
+    "/users/{uid}": {
+      "schema": "User",
+      "description": "User profiles"
+    },
     "/ratings/{ratingId}": {
-      "schema": "rating",
-      "description": "Collection of movie ratings by users"
+      "schema": "Rating",
+      "description": "Movie ratings"
     },
     "/movies/{movieId}": {
-      "schema": "movie",
-      "description": "Collection of movies and their titles"
+      "schema": "Movie",
+      "description": "Movie information"
     },
-    "/users/{userId}": {
-      "schema": "user",
-      "description": "User profile mapping"
+    "/metadata/{docId}": {
+      "schema": "Metadata",
+      "description": "System metadata"
     }
   }
 }
