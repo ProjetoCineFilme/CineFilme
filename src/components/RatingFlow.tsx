@@ -25,6 +25,7 @@ export default function RatingFlow({ onComplete }: { onComplete: (userId: number
   const [assignedId, setAssignedId] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [checkingProfile, setCheckingProfile] = useState(true);
+  const [submitError, setSubmitError] = useState('');
   
   // Form states
   const [email, setEmail] = useState('');
@@ -149,6 +150,7 @@ export default function RatingFlow({ onComplete }: { onComplete: (userId: number
   const handleSubmitRatings = async () => {
     if (!user || !assignedId) return;
     setLoading(true);
+    setSubmitError('');
 
     try {
       const ratingsRef = collection(db, "ratings");
@@ -176,8 +178,9 @@ export default function RatingFlow({ onComplete }: { onComplete: (userId: number
       }
 
       setStep('complete');
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error saving ratings", error);
+      setSubmitError(`Erro ao salvar: ${error.message || 'Verifique sua conexão'}`);
     } finally {
       setLoading(false);
     }
@@ -312,6 +315,9 @@ export default function RatingFlow({ onComplete }: { onComplete: (userId: number
             </div>
 
             <div className="mt-8">
+              {submitError && (
+                <p className="text-red-500 text-[10px] font-bold text-center bg-red-50 py-2 rounded-lg mb-3">{submitError}</p>
+              )}
               <button
                 disabled={Object.keys(ratings).length < 2 || loading}
                 onClick={handleSubmitRatings}
