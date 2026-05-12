@@ -15,9 +15,10 @@ export async function carregarGrafo(): Promise<BiGraph> {
   ratingsSnapshot.forEach((doc) => {
     const data = doc.data();
     if (data.user_id !== undefined && data.movie_id !== undefined && data.rating !== undefined) {
+      // Permitimos strings ou numbers aqui
       grafo.adicionarAresta(
-        Number(data.user_id),
-        Number(data.movie_id),
+        data.user_id,
+        data.movie_id,
         Number(data.rating)
       );
     }
@@ -29,7 +30,7 @@ export async function carregarGrafo(): Promise<BiGraph> {
   moviesSnapshot.forEach((doc) => {
     const data = doc.data();
     if (data.movie_id !== undefined && data.title !== undefined) {
-      grafo.setMovieTitle(Number(data.movie_id), data.title);
+      grafo.setMovieTitle(data.movie_id, data.title);
     }
   });
 

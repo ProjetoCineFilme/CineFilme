@@ -12,7 +12,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "user_id is required" }, { status: 400 });
     }
 
-    const targetUserId = Number(user_id);
+    const targetUserId = user_id; // Removido o Number() para suportar UIDs de string se surgirem
     
     // 1. Load Graph
     const grafo = await carregarGrafo();
@@ -21,8 +21,8 @@ export async function POST(request: Request) {
     // Se houver apenas 1 usuário ou nenhum, retornamos os filmes mais populares como recomendação básica
     if (allUsers.length <= 1) {
        const moviesRepo = grafo.getMovies();
-       const trending = moviesRepo.slice(0, Number(top_n)).map(m => ({
-         title: m.title,
+       const trending = moviesRepo.slice(0, Number(top_n)).map(mid => ({
+         title: grafo.getMovieTitle(mid),
          score: 5.0
        }));
 
@@ -35,20 +35,23 @@ export async function POST(request: Request) {
     }
     
     // Se o usuário alvo não tem avaliações mas outros têm
-    if (!allUsers.includes(targetUserId)) {
+    if (!allUsers.some(u => String(u) === String(targetUserId))) {
       const moviesRepo = grafo.getMovies();
       return NextResponse.json({
          user_id: targetUserId,
          is_new_user: true,
          message: "Avalie mais filmes para receber recomendações personalizadas!",
-         recommendations: moviesRepo.slice(0, Number(top_n)).map(m => ({ title: m.title, score: 0 }))
+         recommendations: moviesRepo.slice(0, Number(top_n)).map(mid => ({ 
+           title: grafo.getMovieTitle(mid), 
+           score: 0 
+         }))
       });
     }
 
     // 2. Calculate Similarities
-    const similarities: { userId: number; sim: number }[] = [];
+    const similarities: { userId: any; sim: number }[] = [];
     for (const otherUserId of allUsers) {
-      if (otherUserId === targetUserId) continue;
+      if (String(otherUserId) === String(targetUserId)) continue;
       const sim = calcularSimilaridade(targetUserId, otherUserId, grafo);
       if (sim > 0) {
         similarities.push({ userId: otherUserId, sim });
@@ -70,7 +73,17 @@ export async function POST(request: Request) {
     const allRecommendations = rankear(targetUserId, candidates, neighborMap, grafo);
 
     // 6. Return Top N
-    const topNRecommendations = allRecommendations.slice(0, Number(top_n));
+    let topNRecommendations = allRecommendations.slice(0, Number(top_n));
+
+    // Fallback: se não houver recomendações personalizadas, pegamos filmes populares aleatórios
+    if (topNRecommendations.length === 0) {
+      const moviesRepo = grafo.getMovies();
+      topNRecommendations = moviesRepo.slice(0, Number(top_n)).map(mid => ({
+        movieId: mid,
+        title: grafo.getMovieTitle(mid),
+        score: 0 // Indica que é uma sugestão de base, não uma predição exata
+      }));
+    }
 
     return NextResponse.json({
       user_id: targetUserId,

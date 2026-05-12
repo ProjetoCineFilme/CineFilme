@@ -1,9 +1,9 @@
-import { BiGraph } from './graph';
+import { BiGraph, NodeId } from './graph';
 
 /**
  * Calculates Cosine Similarity between two users in the graph.
  */
-export function calcularSimilaridade(userA: number, userB: number, grafo: BiGraph): number {
+export function calcularSimilaridade(userA: NodeId, userB: NodeId, grafo: BiGraph): number {
   const ratingsA = grafo.consultarAdjacencia(userA, 'user');
   const ratingsB = grafo.consultarAdjacencia(userB, 'user');
 

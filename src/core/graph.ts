@@ -2,18 +2,19 @@
  * BiGraph class to represent a bipartite graph between Users and Movies.
  */
 export type NodeType = 'user' | 'movie';
+export type NodeId = string | number;
 
 export interface Edge {
-  toId: number;
+  toId: NodeId;
   weight: number;
 }
 
 export class BiGraph {
-  private userNodes: Map<number, Edge[]> = new Map();
-  private movieNodes: Map<number, Edge[]> = new Map();
-  private movieTitles: Map<number, string> = new Map();
+  private userNodes: Map<NodeId, Edge[]> = new Map();
+  private movieNodes: Map<NodeId, Edge[]> = new Map();
+  private movieTitles: Map<NodeId, string> = new Map();
 
-  adicionarVertice(id: number, tipo: NodeType) {
+  adicionarVertice(id: NodeId, tipo: NodeType) {
     if (tipo === 'user') {
       if (!this.userNodes.has(id)) this.userNodes.set(id, []);
     } else {
@@ -21,12 +22,12 @@ export class BiGraph {
     }
   }
 
-  adicionarAresta(userId: number, movieId: number, rating: number) {
+  adicionarAresta(userId: NodeId, movieId: NodeId, rating: number) {
     this.adicionarVertice(userId, 'user');
     this.adicionarVertice(movieId, 'movie');
 
     const userEdges = this.userNodes.get(userId)!;
-    const existingUserEdge = userEdges.find(e => e.toId === movieId);
+    const existingUserEdge = userEdges.find(e => String(e.toId) === String(movieId));
     if (existingUserEdge) {
       existingUserEdge.weight = rating;
     } else {
@@ -34,7 +35,7 @@ export class BiGraph {
     }
 
     const movieEdges = this.movieNodes.get(movieId)!;
-    const existingMovieEdge = movieEdges.find(e => e.toId === userId);
+    const existingMovieEdge = movieEdges.find(e => String(e.toId) === String(userId));
     if (existingMovieEdge) {
       existingMovieEdge.weight = rating;
     } else {
@@ -42,24 +43,24 @@ export class BiGraph {
     }
   }
 
-  setMovieTitle(movieId: number, title: string) {
+  setMovieTitle(movieId: NodeId, title: string) {
     this.movieTitles.set(movieId, title);
   }
 
-  getMovieTitle(movieId: number): string {
-    return this.movieTitles.get(movieId) || `Movie ${movieId}`;
+  getMovieTitle(movieId: NodeId): string {
+    return this.movieTitles.get(movieId) || `Filme #${movieId}`;
   }
 
-  consultarAdjacencia(id: number, tipo: NodeType): Edge[] {
+  consultarAdjacencia(id: NodeId, tipo: NodeType): Edge[] {
     const nodes = tipo === 'user' ? this.userNodes : this.movieNodes;
     return nodes.get(id) || [];
   }
 
-  getUsers(): number[] {
+  getUsers(): NodeId[] {
     return Array.from(this.userNodes.keys());
   }
 
-  getMovies(): number[] {
+  getMovies(): NodeId[] {
     return Array.from(this.movieNodes.keys());
   }
 }

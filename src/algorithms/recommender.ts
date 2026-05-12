@@ -1,7 +1,7 @@
-import { BiGraph } from '../core/graph';
+import { BiGraph, NodeId } from '../core/graph';
 
 export interface Recommendation {
-  movieId: number;
+  movieId: NodeId;
   title: string;
   score: number;
 }
@@ -10,9 +10,9 @@ export interface Recommendation {
  * Ranks candidate movies based on weighted similarity score.
  */
 export function rankear(
-  userId: number, 
-  candidatos: number[], 
-  vizinhosSim: Map<number, number>, 
+  userId: NodeId, 
+  candidatos: NodeId[], 
+  vizinhosSim: Map<NodeId, number>, 
   grafo: BiGraph
 ): Recommendation[] {
   const recommendations: Recommendation[] = [];
