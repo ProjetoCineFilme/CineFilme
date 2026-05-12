@@ -18,11 +18,11 @@ const POPULAR_MOVIES = [
   { movie_id: 108, title: "Cidade de Deus" },
 ];
 
-export default function RatingFlow({ onComplete }: { onComplete: (userId: number) => void }) {
+export default function RatingFlow({ onComplete }: { onComplete: (userId: any) => void }) {
   const [user, setUser] = useState<User | null>(null);
   const [step, setStep] = useState<'login' | 'signup' | 'rating' | 'complete'>('login');
-  const [ratings, setRatings] = useState<Record<number, number>>({});
-  const [assignedId, setAssignedId] = useState<number | null>(null);
+  const [ratings, setRatings] = useState<Record<string, number>>({});
+  const [assignedId, setAssignedId] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [checkingProfile, setCheckingProfile] = useState(true);
   const [submitError, setSubmitError] = useState('');
@@ -42,39 +42,43 @@ export default function RatingFlow({ onComplete }: { onComplete: (userId: number
         try {
           // Usamos o UID diretamente como ID do documento para ser 100% certeiro e rápido
           const userDocRef = doc(db, "users", u.uid);
-          const userDoc = await getDoc(userDocRef).catch(err => {
-            console.error("Erro no getDoc:", err);
-            throw err;
-          });
+          const userDoc = await getDoc(userDocRef);
           
           if (userDoc.exists()) {
             // Usuário já existe, recuperamos o ID profissional dele
             const userData = userDoc.data();
-            setAssignedId(Number(userData.user_id));
+            const uid = userData.user_id !== undefined ? userData.user_id : u.uid;
+            setAssignedId(uid);
             setStep('complete');
           } else {
             // Novo usuário logado (Primeira vez)
             // Usamos uma Transação para garantir que o ID seja sequencial e único
             const counterRef = doc(db, "metadata", "users_counter");
             
-            const newNumericId = await runTransaction(db, async (transaction) => {
-              const counterSnap = await transaction.get(counterRef);
-              let nextId = 1;
-              if (counterSnap.exists()) {
-                nextId = (counterSnap.data().count || 0) + 1;
-              }
-              transaction.set(counterRef, { count: nextId }, { merge: true });
-              return nextId;
-            });
+            let newNumericId;
+            try {
+              newNumericId = await runTransaction(db, async (transaction) => {
+                const counterSnap = await transaction.get(counterRef);
+                let nextId = 1;
+                if (counterSnap.exists()) {
+                  nextId = (counterSnap.data().count || 0) + 1;
+                }
+                transaction.set(counterRef, { count: nextId }, { merge: true });
+                return nextId;
+              });
+            } catch (err) {
+              console.warn("Transaction failed, using UID as fallback", err);
+              newNumericId = u.uid;
+            }
             
             await setDoc(userDocRef, {
-              user_id: Number(newNumericId),
+              user_id: newNumericId,
               email: u.email,
               uid: u.uid,
               created_at: new Date()
             });
             
-            setAssignedId(Number(newNumericId));
+            setAssignedId(newNumericId);
             setTimeout(() => setStep('rating'), 400);
           }
         } catch (e: any) {
@@ -143,8 +147,8 @@ export default function RatingFlow({ onComplete }: { onComplete: (userId: number
     }
   };
 
-  const handleRate = (movieId: number, rating: number) => {
-    setRatings(prev => ({ ...prev, [movieId]: rating }));
+  const handleRate = (movieId: any, rating: number) => {
+    setRatings(prev => ({ ...prev, [String(movieId)]: rating }));
   };
 
   const handleSubmitRatings = async () => {
@@ -157,13 +161,13 @@ export default function RatingFlow({ onComplete }: { onComplete: (userId: number
       const moviesRef = collection(db, "movies");
 
       for (const [movieId, rating] of Object.entries(ratings)) {
-        const mid = Number(movieId);
-        const uid = Number(assignedId);
+        const mid = movieId;
+        const uid = assignedId;
         
         // Ensure movie exists in collection for dashboard titles
-        const movieData = POPULAR_MOVIES.find(m => m.movie_id === mid);
+        const movieData = POPULAR_MOVIES.find(m => String(m.movie_id) === String(mid));
         if (movieData) {
-          const mDocRef = doc(db, "movies", mid.toString());
+          const mDocRef = doc(db, "movies", String(mid));
           await setDoc(mDocRef, movieData, { merge: true });
         }
 
