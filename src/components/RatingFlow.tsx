@@ -131,18 +131,22 @@ export default function RatingFlow({ onComplete }: { onComplete: (userId: any) =
       setLoading(false);
       console.error("Auth Error:", error.code, error.message);
       
-      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential' || error.code === 'auth/invalid-email') {
-        setAuthError("E-mail ou senha incorretos.");
-      } else if (error.code === 'auth/email-already-in-use') {
-        setAuthError("Este e-mail já está em uso.");
-      } else if (error.code === 'auth/weak-password') {
-        setAuthError("A senha deve ter pelo menos 6 caracteres.");
-      } else if (error.code === 'auth/operation-not-allowed') {
-        setAuthError("Erro: O método de login por e-mail ainda não foi totalmente ativado no Firebase.");
-      } else if (error.code === 'auth/popup-closed-by-user') {
-        setAuthError("Login cancelado.");
+      if (isSignup) {
+        if (error.code === 'auth/invalid-email') {
+          setAuthError("E-mail inválido.");
+        } else if (error.code === 'auth/email-already-in-use') {
+          setAuthError("Este e-mail já está em uso.");
+        } else if (error.code === 'auth/weak-password') {
+          setAuthError("A senha deve ter pelo menos 6 caracteres.");
+        } else {
+          setAuthError(`Erro no cadastro: ${error.message || "Tente novamente."}`);
+        }
       } else {
-        setAuthError(`Erro: ${error.message || "Tente novamente mais tarde."}`);
+        if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential' || error.code === 'auth/invalid-email') {
+          setAuthError("E-mail ou senha incorretos.");
+        } else {
+          setAuthError(`Erro no login: ${error.message || "Tente novamente."}`);
+        }
       }
     }
   };
