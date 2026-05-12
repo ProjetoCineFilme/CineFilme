@@ -77,7 +77,7 @@ export async function POST(request: Request) {
 
     // Fallback: se não houver recomendações personalizadas, pegamos filmes populares do mesmo gênero
     if (topNRecommendations.length === 0) {
-      const normalize = (s: string) => s.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      const normalize = (s: string) => s ? s.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : "geral";
       
       const userRatings = grafo.consultarAdjacencia(targetUserId, 'user');
       const watchedIds = new Set(userRatings.map(r => String(r.toId)));
@@ -88,7 +88,7 @@ export async function POST(request: Request) {
         .filter(mid => {
           const sMid = String(mid);
           const genre = normalize(grafo.getMovieGenre(mid));
-          return !watchedIds.has(sMid) && myGenres.has(genre);
+          return !watchedIds.has(sMid) && (myGenres.has(genre) || myGenres.size === 0);
         })
         .slice(0, Number(top_n));
       
@@ -96,17 +96,8 @@ export async function POST(request: Request) {
         topNRecommendations = genreFallback.map(mid => ({
           movieId: mid,
           title: grafo.getMovieTitle(mid),
-          score: 0.1 // Pontuação baixa mas positiva por ser do mesmo gênero
+          score: 1.0 // Pontuação base para cold start
         }));
-      } else {
-        topNRecommendations = moviesRepo
-          .filter(mid => !watchedIds.has(String(mid)))
-          .slice(0, Number(top_n))
-          .map(mid => ({
-            movieId: mid,
-            title: grafo.getMovieTitle(mid),
-            score: 0
-          }));
       }
     }
 

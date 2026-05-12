@@ -91,13 +91,34 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
     }
   };
 
+  const normalizeTitle = (title: string) => {
+    return title
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "") // Remove acentos
+      .replace(/[^a-z0-9]/g, "")     // Remove tudo que não é letra ou número
+      .trim();
+  };
+
   const handleAddMovie = async () => {
     if (!newMovieTitle.trim()) return;
     setLoading(true);
     try {
+      const normalizedNew = normalizeTitle(newMovieTitle);
+      const duplicate = movies.find(m => normalizeTitle(m.title) === normalizedNew);
+
+      if (duplicate) {
+        setFeedback(`Este filme já existe como "${duplicate.title}". Avalie-o na lista abaixo!`);
+        setNewMovieTitle('');
+        setIsAddingMovie(false);
+        setSearchTerm(duplicate.title); // Foca no filme existente
+        setTimeout(() => setFeedback(''), 5000);
+        return;
+      }
+
       // Find highest movie_id
       const querySnapshot = await getDocs(query(collection(db, "movies"), orderBy("movie_id", "desc"), limit(1)));
-      let nextId = 5001; // Start high for user added movies
+      let nextId = 5001; 
       if (!querySnapshot.empty) {
         nextId = (querySnapshot.docs[0].data().movie_id || 5000) + 1;
       }

@@ -28,13 +28,13 @@ export function calcularSimilaridade(userA: NodeId, userB: NodeId, grafo: BiGrap
   }
 
   // 2. GENRE SIMILARITY (Profile based)
-  const normalize = (s: string) => s.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const normalize = (s: string) => s ? s.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : "geral";
 
   const getGenreProfile = (ratings: any[]) => {
     const profile = new Map<string, number>();
     for (const edge of ratings) {
       const genre = normalize(grafo.getMovieGenre(edge.toId));
-      profile.set(genre, (profile.get(genre) || 0) + edge.weight);
+      profile.set(genre, (profile.get(genre) || 0) + Number(edge.weight));
     }
     return profile;
   };
@@ -56,13 +56,10 @@ export function calcularSimilaridade(userA: NodeId, userB: NodeId, grafo: BiGrap
   }
 
   // 3. COMBINATION
-  // If we have common movies, they are a stronger signal.
-  // If not, genre similarity is our only hope for cold-start.
   if (commonMovies.length > 0) {
-    return (movieSim * 0.6) + (genreSim * 0.4);
+    return (movieSim * 0.5) + (genreSim * 0.5);
   }
   
   // No movies in common? Use purely genre. 
-  // If genre matches perfectly (e.g. only Comedy vs only Comedy), sim will be 1.0
   return genreSim;
 }
