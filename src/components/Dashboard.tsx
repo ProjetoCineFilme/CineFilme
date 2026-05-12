@@ -52,10 +52,14 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
     try {
       // Get all movies
       const moviesSnap = await getDocs(collection(db, "movies"));
-      const moviesList = moviesSnap.docs.map(doc => ({ 
-        movie_id: doc.data().movie_id, 
-        title: doc.data().title 
-      }));
+      const moviesList = moviesSnap.docs.map(doc => {
+        const data = doc.data();
+        return { 
+          movie_id: data.movie_id, 
+          title: data.title || "Filme sem título",
+          genre: data.genre || "Geral"
+        };
+      });
       setMovies(moviesList);
 
       // Get my ratings
@@ -112,6 +116,8 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
     } catch (e) {
       console.error("Add movie error:", e);
     } finally {
+      setLoading(true); // Manter carregando até o fetchData() completar se possível
+      setTimeout(() => fetchData(), 500); // Dar um tempo pro Firestore indexar
       setLoading(false);
     }
   };
@@ -166,8 +172,9 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
   };
 
   const filteredMovies = movies.filter(m => 
-    m.title.toLowerCase().includes(searchTerm.toLowerCase())
-  ).slice(0, 8);
+    (m.title || "").toLowerCase().includes((searchTerm || "").toLowerCase()) ||
+    (m.genre || "").toLowerCase().includes((searchTerm || "").toLowerCase())
+  ).slice(0, 10);
 
   return (
     <div className="max-w-6xl mx-auto p-6 md:p-12">
@@ -278,9 +285,14 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
                 const myRating = myRatings.find(r => String(r.movie_id) === String(movie.movie_id))?.rating;
                 return (
                   <div key={movie.movie_id} className="p-4 rounded-2xl border border-neutral-50 bg-neutral-50/30 hover:border-indigo-100 hover:shadow-md transition-all group">
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="font-bold text-neutral-800 text-sm truncate max-w-[150px]">{movie.title}</span>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="font-bold text-neutral-800 text-sm truncate max-w-[180px]">{movie.title}</span>
                       <span className="text-[9px] text-neutral-300 font-mono">#{movie.movie_id}</span>
+                    </div>
+                    <div className="mb-3">
+                      <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider bg-indigo-50 px-2 py-0.5 rounded-md">
+                        {movie.genre || "Geral"}
+                      </span>
                     </div>
                     <div className="flex gap-1">
                       {[1, 2, 3, 4, 5].map(star => {
@@ -370,9 +382,12 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
                     </div>
                     <div className="flex-1 overflow-hidden">
                       <p className="text-xs font-bold text-neutral-700 truncate">{movie?.title || 'Filme Removido'}</p>
-                      <p className="text-[10px] text-neutral-400 font-mono tracking-tighter">
-                        {rating.created_at?.toDate ? rating.created_at.toDate().toLocaleDateString() : 'Recent'}
-                      </p>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[9px] font-black text-indigo-400 uppercase tracking-tighter">{movie?.genre || 'Geral'}</span>
+                        <p className="text-[10px] text-neutral-400 font-mono tracking-tighter">
+                          {rating.created_at?.toDate ? rating.created_at.toDate().toLocaleDateString() : 'Recent'}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 );
