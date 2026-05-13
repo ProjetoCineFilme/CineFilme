@@ -37,7 +37,8 @@ export async function carregarGrafo(): Promise<BiGraph> {
   const moviesSnapshot = await getDocs(collection(db, 'movies'));
   moviesSnapshot.forEach((doc) => {
     const data = doc.data();
-    const rawMid = data.movie_id ?? data.movieId ?? data.id;
+    // Prioriza campos explícitos, mas usa o ID do documento como fallback final
+    const rawMid = data.movie_id ?? data.movieId ?? data.id ?? doc.id;
     if (rawMid !== undefined) {
       const mid = String(rawMid);
       grafo.adicionarVertice(mid, 'movie');
