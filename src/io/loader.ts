@@ -12,15 +12,20 @@ export async function carregarGrafo(): Promise<BiGraph> {
   const ratingsSnapshot = await getDocs(collection(db, 'ratings'));
   console.log(`Loader: Found ${ratingsSnapshot.size} raw ratings`);
   
-  const uniqueRatings = new Map<string, { uid: string, mid: string, val: number }>();
+    const uniqueRatings = new Map<string, { uid: string, mid: string, val: number }>();
   
   ratingsSnapshot.forEach((doc) => {
     const data = doc.data();
-    if (data.user_id !== undefined && data.movie_id !== undefined && data.rating !== undefined) {
-      const uid = String(data.user_id);
-      const mid = String(data.movie_id);
+    // Suporte a múltiplas chaves e tipos de ID
+    const rawUid = data.user_id ?? data.userId ?? data.uid;
+    const rawMid = data.movie_id ?? data.movieId ?? data.mid;
+    const rawRating = data.rating ?? data.nota;
+
+    if (rawUid !== undefined && rawMid !== undefined && rawRating !== undefined) {
+      const uid = String(rawUid);
+      const mid = String(rawMid);
       const key = `${uid}_${mid}`;
-      uniqueRatings.set(key, { uid, mid, val: Number(data.rating) });
+      uniqueRatings.set(key, { uid, mid, val: Number(rawRating) });
     }
   });
 
@@ -30,11 +35,11 @@ export async function carregarGrafo(): Promise<BiGraph> {
 
   // 2. Load Movies (Titles & Genres)
   const moviesSnapshot = await getDocs(collection(db, 'movies'));
-  console.log(`Loader: Found ${moviesSnapshot.size} movies`);
   moviesSnapshot.forEach((doc) => {
     const data = doc.data();
-    if (data.movie_id !== undefined) {
-      const mid = data.movie_id;
+    const rawMid = data.movie_id ?? data.movieId;
+    if (rawMid !== undefined) {
+      const mid = String(rawMid);
       // Adiciona o nó do filme mesmo que não tenha avaliações ainda
       grafo.adicionarVertice(mid, 'movie');
       

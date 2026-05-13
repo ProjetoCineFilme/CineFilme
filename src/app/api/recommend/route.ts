@@ -75,37 +75,41 @@ export async function POST(request: Request) {
     // 6. Return Top N
     let topNRecommendations = allRecommendations.slice(0, Number(top_n));
 
-    // Fallback logic VERY ROBUST: if no personalized recommendations, suggest movies from same genres or popular ones
+    // Fallback logic ULTRA ROBUST:
+    // Se não houver recomendações personalizadas ou não atingirmos a meta, completamos com filmes populares/favoritos
+    const userRatings = grafo.consultarAdjacencia(targetUserId, 'user');
+    const watchedIds = new Set(userRatings.map(r => String(r.toId)));
+
     if (topNRecommendations.length < Number(top_n)) {
       const normalize = (s: string) => s ? s.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : "geral";
-      
-      const userRatings = grafo.consultarAdjacencia(targetUserId, 'user');
-      const watchedIds = new Set(userRatings.map(r => String(r.toId)));
       const myGenres = new Set(userRatings.map(r => normalize(grafo.getMovieGenre(r.toId))));
       
       const allMovies = grafo.getMovies();
       const additional = allMovies
         .filter(mid => {
           const sMid = String(mid);
-          const genre = normalize(grafo.getMovieGenre(mid));
-          // Not watched, not already recommended
-          const notWatched = !watchedIds.has(sMid);
-          const notInRecs = !topNRecommendations.some(r => String(r.movieId) === sMid);
-          // High preference: Matches my genres. Low preference: Just any movie.
-          return notWatched && notInRecs;
+          // Não assistido e não está na lista atual
+          return !watchedIds.has(sMid) && !topNRecommendations.some(r => String(r.movieId) === sMid);
         })
         .sort((a, b) => {
+          // Prioriza gêneros que o usuário já gostou
           const genreA = normalize(grafo.getMovieGenre(a));
           const genreB = normalize(grafo.getMovieGenre(b));
-          const scoreA = myGenres.has(genreA) ? 2 : 1;
-          const scoreB = myGenres.has(genreB) ? 2 : 1;
-          return scoreB - scoreA || Math.random() - 0.5;
+          
+          const scoreA = myGenres.has(genreA) ? 10 : 0;
+          const scoreB = myGenres.has(genreB) ? 10 : 0;
+          
+          // Desempate com popularidade (número de conexões na base)
+          const popA = grafo.consultarAdjacencia(a, 'movie').length;
+          const popB = grafo.consultarAdjacencia(b, 'movie').length;
+          
+          return (scoreB + popB) - (scoreA + popA) || Math.random() - 0.5;
         })
         .slice(0, Number(top_n) - topNRecommendations.length)
         .map(mid => ({
           movieId: mid,
           title: grafo.getMovieTitle(mid),
-          score: 3.5 // Baseline score for genre matches
+          score: 3.0 + (Math.random() * 0.5) // Score de fallback amigável
         }));
       
       topNRecommendations = [...topNRecommendations, ...additional];
@@ -115,7 +119,7 @@ export async function POST(request: Request) {
       user_id: targetUserId,
       recommendations: topNRecommendations.map(r => ({
         title: r.title,
-        score: Number(r.score.toFixed(2))
+        score: Number(Number(r.score).toFixed(2))
       }))
     });
   } catch (error) {
