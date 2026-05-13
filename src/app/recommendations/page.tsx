@@ -14,6 +14,7 @@ function RecommendationsList() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const userId = searchParams.get('user_id');
+  const userName = searchParams.get('user_name') || userId;
   const topN = searchParams.get('top_n') || '10';
 
   const [loading, setLoading] = useState(true);
@@ -99,14 +100,26 @@ function RecommendationsList() {
           <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" /> Voltar
         </button>
         <div className="text-right">
-          <h1 className="text-2xl font-bold text-neutral-900">Recomendações para o usuário #{userId}</h1>
+          <h1 className="text-2xl font-bold text-neutral-900">Recomendações para {userName}</h1>
           <p className="text-neutral-500 text-sm">Baseadas em seu perfil de comportamento</p>
         </div>
       </header>
 
       {recommendations.length === 0 ? (
         <div className="bg-white rounded-2xl p-12 text-center border border-neutral-200">
-          <p className="text-neutral-500 italic">Nenhuma recomendação encontrada para este usuário.</p>
+          <AlertCircle className="w-12 h-12 text-amber-500 mx-auto mb-4" />
+          <h3 className="text-lg font-bold text-neutral-900 mb-2">Ops! Nenhuma recomendação agora.</h3>
+          <p className="text-neutral-500 italic mb-6">
+            Isso acontece se você já avaliou todos os filmes disponíveis ou se o sistema ainda está carregando os dados.
+          </p>
+          <div className="p-4 bg-neutral-50 rounded-xl inline-block text-left">
+            <p className="text-xs font-bold text-neutral-400 uppercase mb-2">O que fazer?</p>
+            <ul className="text-xs text-neutral-600 space-y-1 list-disc pl-4">
+              <li>Cadastre novos filmes no painel principal</li>
+              <li>Peça para outros amigos avaliarem para criar conexões</li>
+              <li>Tente atualizar a página em alguns instantes</li>
+            </ul>
+          </div>
         </div>
       ) : (
         recommendations.map((rec, index) => (

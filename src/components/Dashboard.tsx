@@ -263,14 +263,14 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
           <div>
             <h1 className="text-3xl font-black text-neutral-900 tracking-tight">Painel CineFilme</h1>
             <p className="text-neutral-400 text-xs font-bold uppercase tracking-widest flex items-center gap-2">
-              <UserIcon className="w-3 h-3" /> User ID: <span className="text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">{profile.user_id}</span>
+              <UserIcon className="w-3 h-3" /> Usuário: <span className="text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">{profile.name || profile.email?.split('@')[0] || "Teste"}</span>
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
           <Link 
-            href={`/recommendations?user_id=${profile.user_id}&top_n=10`}
+            href={`/recommendations?user_id=${profile.user_id}&user_name=${encodeURIComponent(profile.name || profile.email?.split('@')[0] || "Teste")}&top_n=10`}
             className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-2xl font-bold flex items-center gap-2 transition-all shadow-xl shadow-indigo-100 active:scale-95"
           >
             <Sparkles className="w-4 h-4" /> Gerar Recomendações
