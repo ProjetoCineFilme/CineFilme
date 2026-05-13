@@ -21,7 +21,10 @@ export async function POST(request: Request) {
     const allUsers = grafo.getUsers();
     
     // Obter filmes já assistidos pelo usuário alvo para filtrar em todos os caminhos
-    const userRatings = grafo.consultarAdjacencia(targetUserId, 'user');
+    const targetIdStr = String(targetUserId).toLowerCase();
+    const realTargetId = allUsers.find(u => String(u).toLowerCase() === targetIdStr) || targetUserId;
+    
+    const userRatings = grafo.consultarAdjacencia(realTargetId, 'user');
     const watchedIds = new Set(userRatings.map(r => String(r.toId)));
 
     // Helper de normalização para gêneros
@@ -29,81 +32,78 @@ export async function POST(request: Request) {
 
     let topNRecommendations: any[] = [];
 
-    // Se houver apenas 1 usuário ou nenhum (target) podemos pular o CF e ir direto pro fallback
-    if (allUsers.length > 1 && allUsers.some(u => String(u) === String(targetUserId))) {
-      // 2. Calculate Similarities
+    // Gêneros favoritos do usuário (score >= 3)
+    const myGenres = new Set(
+      userRatings
+        .filter(r => r.weight >= 3)
+        .map(r => normalize(grafo.getMovieGenre(r.toId)))
+    );
+
+    // Tentar Recomendação Colaborativa (CF)
+    if (allUsers.length > 1 && userRatings.length > 0) {
       const similarities: { userId: any; sim: number }[] = [];
       for (const otherUserId of allUsers) {
-        if (String(otherUserId) === String(targetUserId)) continue;
-        const sim = calcularSimilaridade(targetUserId, otherUserId, grafo);
+        if (String(otherUserId).toLowerCase() === targetIdStr) continue;
+        const sim = calcularSimilaridade(realTargetId, otherUserId, grafo);
         if (sim > 0) {
           similarities.push({ userId: otherUserId, sim });
         }
       }
 
-      // 3. Select K neighbors
-      const topKNeighbors = similarities
-        .sort((a, b) => b.sim - a.sim)
-        .slice(0, Number(k));
+      if (similarities.length > 0) {
+        const topKNeighbors = similarities
+          .sort((a, b) => b.sim - a.sim)
+          .slice(0, Number(k));
 
-      if (topKNeighbors.length > 0) {
         const neighborMap = new Map(topKNeighbors.map(n => [n.userId, n.sim]));
         const neighborIds = topKNeighbors.map(n => n.userId);
 
-        // 4. BFS Candidates
-        const candidates = buscarCandidatos(targetUserId, neighborIds, grafo);
-
-        // 5. Rank Candidates
-        const allRecommendations = rankear(targetUserId, candidates, neighborMap, grafo);
-        topNRecommendations = allRecommendations.slice(0, Number(top_n));
+        const candidates = buscarCandidatos(realTargetId, neighborIds, grafo);
+        const allRecommendations = rankear(realTargetId, candidates, neighborMap, grafo);
+        
+        // Boost por gênero nas recomendações da CF
+        topNRecommendations = allRecommendations.map(r => {
+          const g = normalize(grafo.getMovieGenre(r.movieId));
+          const genreMatch = myGenres.has(g) ? 1.5 : 1.0;
+          return { ...r, score: r.score * genreMatch };
+        })
+        .sort((a, b) => b.score - a.score)
+        .slice(0, Number(top_n));
       }
     }
 
-    // Fallback logic SUPREMO:
-    // Se não houver recomendações personalizadas suficientes (usuário novo, sem vizinhos ou base pequena)
-    // sugerimos filmes que ele ainda não viu, priorizando os de gêneros que ele já avaliou positivamente.
+    // Fallback logic: Se não completar top_n, busca outros filmes da base
     if (topNRecommendations.length < Number(top_n)) {
-      // Gêneros favoritos baseados em ratings (se existirem)
-      const myGenres = new Set(
-        userRatings
-          .filter(r => r.weight >= 3)
-          .map(r => normalize(grafo.getMovieGenre(r.toId)))
-      );
-      
       const allMovies = grafo.getMovies();
       const additional = allMovies
         .filter(mid => {
           const sMid = String(mid);
-          // Não assistido e não está na lista atual de recomendações
           return !watchedIds.has(sMid) && !topNRecommendations.some(r => String(r.movieId) === sMid);
         })
         .sort((a, b) => {
           const genreA = normalize(grafo.getMovieGenre(a));
           const genreB = normalize(grafo.getMovieGenre(b));
           
-          // Pontuação: Gênero > Popularidade > Standard
-          const scoreA = myGenres.size > 0 && myGenres.has(genreA) ? 2000 : 0;
-          const scoreB = myGenres.size > 0 && myGenres.has(genreB) ? 2000 : 0;
+          // Pontuação: Gênero (Prioridade Máxima) > Popularidade
+          const scoreA = myGenres.has(genreA) ? 10000 : 0;
+          const scoreB = myGenres.has(genreB) ? 10000 : 0;
           
           const popA = grafo.consultarAdjacencia(a, 'movie').length;
           const popB = grafo.consultarAdjacencia(b, 'movie').length;
           
-          const isStdA = STANDARD_MOVIE_IDS.includes(Number(a)) ? 50 : 0;
-          const isStdB = STANDARD_MOVIE_IDS.includes(Number(b)) ? 50 : 0;
-          
-          return (scoreB + popB + isStdB) - (scoreA + popA + isStdA) || Math.random() - 0.5;
+          return (scoreB + popB) - (scoreA + popA) || Math.random() - 0.5;
         })
         .slice(0, Math.max(0, Number(top_n) - topNRecommendations.length))
         .map(mid => ({
           movieId: mid,
           title: grafo.getMovieTitle(mid),
-          score: 3.0 + (Math.random() * 0.5) 
+          score: myGenres.has(normalize(grafo.getMovieGenre(mid))) ? 4.5 : 3.0
         }));
       
       topNRecommendations = [...topNRecommendations, ...additional];
     }
 
-    // Baseline absoluta
+    // Se ainda assim for zero (improvável se houver filmes), usa os clássicos como rede de segurança final
     if (topNRecommendations.length === 0) {
        const classics = [
          { movieId: "101", title: "O Poderoso Chefão", score: 4.8 },
@@ -112,15 +112,17 @@ export async function POST(request: Request) {
          { movieId: "104", title: "Batman: O Cavaleiro das Trevas", score: 4.5 },
          { movieId: "105", title: "Gente Grande", score: 4.0 },
          { movieId: "106", title: "Esposa de Mentirinha", score: 4.0 },
-       ];
-       topNRecommendations = classics.filter(c => !watchedIds.has(String(c.movieId))).slice(0, Number(top_n));
-       // Se ainda assim for zero (viu todos os clássicos), manda os clássicos mesmo
-       if (topNRecommendations.length === 0) topNRecommendations = classics.slice(0, Number(top_n));
+       ].filter(c => !watchedIds.has(String(c.movieId)));
+       
+       topNRecommendations = classics.slice(0, Number(top_n));
+       // Fallback do fallback
+       if (topNRecommendations.length === 0) topNRecommendations = classics.slice(0, 3);
     }
 
     return NextResponse.json({
       user_id: targetUserId,
       recommendations: topNRecommendations.map(r => ({
+        movieId: r.movieId,
         title: r.title,
         score: Number(Number(r.score).toFixed(2))
       }))
