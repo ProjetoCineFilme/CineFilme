@@ -2,15 +2,13 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Safety helpers
+    // Funções de ajuda
     function isSignedIn() { return request.auth != null; }
     function isOwner(uid) { return isSignedIn() && request.auth.uid == uid; }
-    function isEmailVerified() { return isSignedIn(); } // Keeping it simple since they use custom emails
 
-    // 1. Metadata (Counters)
+    // 1. Contador de Usuários (Metadata)
     match /metadata/{docId} {
-      allow read: if isSignedIn();
-      allow write: if isSignedIn();
+      allow read, write: if isSignedIn();
     }
 
     // 2. Perfis de Usuário
@@ -22,12 +20,12 @@ service cloud.firestore {
     // 3. Avaliações (Ratings)
     match /ratings/{ratingId} {
       allow read: if true;
-      // Allow creation if logged in
+      // Permite criar se estiver logado
       allow create: if isSignedIn();
-      // Allow update if owner (matching by user_id or user_email)
+      // Permite atualizar ou deletar se o UID ou o e-mail baterem com o logado
       allow update, delete: if isSignedIn() && (
-        (resource.data.user_email == request.auth.token.email) ||
         (resource.data.uid == request.auth.uid) ||
+        (resource.data.user_email == request.auth.token.email) ||
         (resource.data.user_id == request.auth.uid)
       );
     }
@@ -35,10 +33,11 @@ service cloud.firestore {
     // 4. Filmes
     match /movies/{movieId} {
       allow read: if true;
+      // Importante: allow write permite create e update para usuários logados
       allow write: if isSignedIn();
     }
 
-    // Default deny
+    // Bloqueio padrão
     match /{document=**} {
       allow read, write: if false;
     }
