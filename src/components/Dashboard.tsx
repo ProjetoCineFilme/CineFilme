@@ -140,7 +140,7 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
         title: newMovieTitle.trim(),
         genre: newMovieGenre,
         created_at: new Date(),
-        added_by: user.uid
+        added_by: profile.user_id
       });
 
       setNewMovieTitle('');
@@ -245,8 +245,8 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
     // Se não estiver pesquisando, mostra:
     // 1. Filmes padrão (101-108)
     const isStandard = STANDARD_MOVIE_IDS.includes(Number(m.movie_id));
-    // 2. Cadastrados por mim (compara UID de quem adicionou com UID atual do Auth)
-    const addedByMe = m.added_by === user.uid;
+    // 2. Cadastrados por mim (compara UID de quem adicionou com UID atual do perfil)
+    const addedByMe = m.added_by === profile.user_id;
     // 3. Já avaliados por mim (compara ID sequencial do filme)
     const ratedByMe = myRatings.some(r => String(r.movie_id) === String(m.movie_id));
     
