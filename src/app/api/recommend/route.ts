@@ -4,6 +4,8 @@ import { calcularSimilaridade } from '../../../core/similarity';
 import { buscarCandidatos } from '../../../algorithms/bfs';
 import { rankear } from '../../../algorithms/recommender';
 
+const STANDARD_MOVIE_IDS = [101, 102, 103, 104, 105, 106, 107, 108];
+
 export async function POST(request: Request) {
   try {
     const { user_id, top_n = 10, k = 5 } = await request.json();
@@ -87,11 +89,6 @@ export async function POST(request: Request) {
       
       let allMovies = grafo.getMovies();
       
-      // Se o grafo estiver vazio de filmes (raro), usamos IDs padrão como última tentativa
-      if (allMovies.length === 0) {
-        allMovies = ["101", "102", "103", "104", "105", "106", "107", "108"];
-      }
-
       const additional = allMovies
         .filter(mid => {
           const sMid = String(mid);
@@ -103,16 +100,20 @@ export async function POST(request: Request) {
           const genreB = normalize(grafo.getMovieGenre(b));
           
           // Pontuação de similaridade de gênero
-          const scoreA = myGenres.has(genreA) ? 100 : 0;
-          const scoreB = myGenres.has(genreB) ? 100 : 0;
+          const scoreA = myGenres.has(genreA) ? 1000 : 0;
+          const scoreB = myGenres.has(genreB) ? 1000 : 0;
           
           // Popularidade global (quem tem mais avaliações)
           const popA = grafo.consultarAdjacencia(a, 'movie').length;
           const popB = grafo.consultarAdjacencia(b, 'movie').length;
           
-          return (scoreB + popB) - (scoreA + popA) || Math.random() - 0.5;
+          // Se for um filme "Standard", ganha um bônus de visibilidade no fallback
+          const isStdA = STANDARD_MOVIE_IDS.includes(Number(a)) ? 50 : 0;
+          const isStdB = STANDARD_MOVIE_IDS.includes(Number(b)) ? 50 : 0;
+          
+          return (scoreB + popB + isStdB) - (scoreA + popA + isStdA) || Math.random() - 0.5;
         })
-        .slice(0, Number(top_n) - topNRecommendations.length)
+        .slice(0, Math.max(0, Number(top_n) - topNRecommendations.length))
         .map(mid => ({
           movieId: mid,
           title: grafo.getMovieTitle(mid),
@@ -122,17 +123,19 @@ export async function POST(request: Request) {
       topNRecommendations = [...topNRecommendations, ...additional];
     }
 
-    // Baseline definitiva: se mesmo com o fallback continuarmos com zero (base vazia ou erro de rede)
+    // Baseline absoluta: se a base de filmes estiver estranhamente vazia ou o usuário viu TUDO 
+    // mas precisamos retornar algo (ex: top_n o obriga)
     if (topNRecommendations.length === 0) {
-      const allPossible = [
-        { movieId: "101", title: "O Poderoso Chefão", score: 4.5 },
-        { movieId: "102", title: "Pulp Fiction", score: 4.5 },
-        { movieId: "103", title: "Interstellar", score: 4.5 },
-        { movieId: "104", title: "Batman: O Cavaleiro das Trevas", score: 4.5 },
-      ];
-      // Tenta filtrar o que ele já viu, se sobrar algo ótimo, se não manda bala
-      const finalFallback = allPossible.filter(m => !watchedIds.has(m.movieId));
-      topNRecommendations = finalFallback.length > 0 ? finalFallback : allPossible;
+       // Tenta pegar os clássicos que definimos no início
+       const classics = [
+         { movieId: "101", title: "O Poderoso Chefão", score: 4.8 },
+         { movieId: "102", title: "Pulp Fiction", score: 4.7 },
+         { movieId: "103", title: "Interstellar", score: 4.6 },
+         { movieId: "104", title: "Batman: O Cavaleiro das Trevas", score: 4.5 },
+         { movieId: "105", title: "Gente Grande", score: 4.0 },
+         { movieId: "106", title: "Esposa de Mentirinha", score: 4.0 },
+       ];
+       topNRecommendations = classics.slice(0, Number(top_n));
     }
 
     return NextResponse.json({

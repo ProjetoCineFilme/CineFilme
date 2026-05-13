@@ -37,17 +37,19 @@ export async function carregarGrafo(): Promise<BiGraph> {
   const moviesSnapshot = await getDocs(collection(db, 'movies'));
   moviesSnapshot.forEach((doc) => {
     const data = doc.data();
-    const rawMid = data.movie_id ?? data.movieId;
+    const rawMid = data.movie_id ?? data.movieId ?? data.id;
     if (rawMid !== undefined) {
       const mid = String(rawMid);
-      // Adiciona o nó do filme mesmo que não tenha avaliações ainda
       grafo.adicionarVertice(mid, 'movie');
       
-      if (data.title) {
-        grafo.setMovieTitle(mid, data.title);
+      const title = data.title ?? data.nome;
+      const genre = data.genre ?? data.genero ?? data.categoria;
+
+      if (title) {
+        grafo.setMovieTitle(mid, title);
       }
-      if (data.genre) {
-        grafo.setMovieGenre(mid, data.genre);
+      if (genre) {
+        grafo.setMovieGenre(mid, genre);
       }
     }
   });

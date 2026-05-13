@@ -112,13 +112,21 @@ function RecommendationsList() {
           <p className="text-neutral-500 italic mb-6">
             Isso acontece se você já avaliou todos os filmes disponíveis ou se o sistema ainda está carregando os dados.
           </p>
-          <div className="p-4 bg-neutral-50 rounded-xl inline-block text-left">
-            <p className="text-xs font-bold text-neutral-400 uppercase mb-2">O que fazer?</p>
-            <ul className="text-xs text-neutral-600 space-y-1 list-disc pl-4">
-              <li>Cadastre novos filmes no painel principal</li>
-              <li>Peça para outros amigos avaliarem para criar conexões</li>
-              <li>Tente atualizar a página em alguns instantes</li>
-            </ul>
+          <div className="flex flex-col items-center gap-4">
+            <div className="p-4 bg-neutral-50 rounded-xl inline-block text-left w-full max-w-sm">
+              <p className="text-xs font-bold text-neutral-400 uppercase mb-2">O que fazer?</p>
+              <ul className="text-xs text-neutral-600 space-y-1 list-disc pl-4">
+                <li>Cadastre novos filmes no painel principal</li>
+                <li>Peça para outros amigos avaliarem para criar conexões</li>
+                <li>Tente clicar no botão de atualizar abaixo</li>
+              </ul>
+            </div>
+            <button 
+              onClick={() => window.location.reload()}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-xl font-bold transition-all shadow-lg shadow-indigo-100 flex items-center gap-2"
+            >
+              <Sparkles className="w-4 h-4" /> Atualizar Agora
+            </button>
           </div>
         </div>
       ) : (
