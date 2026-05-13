@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Loader2, ArrowLeft, Star, Film, AlertCircle } from 'lucide-react';
+import { Loader2, ArrowLeft, Star, Film, AlertCircle, Sparkles } from 'lucide-react';
 import { motion } from 'motion/react';
 
 interface Recommendation {

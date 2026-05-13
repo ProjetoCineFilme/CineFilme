@@ -57,9 +57,9 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
       const moviesList = moviesSnap.docs.map(doc => {
         const data = doc.data();
         return { 
-          movie_id: data.movie_id, 
-          title: data.title || "Filme sem título",
-          genre: data.genre || "Geral",
+          movie_id: data.movie_id ?? data.movieId ?? data.id, 
+          title: data.title || data.nome || "Filme sem título",
+          genre: data.genre || data.genero || data.categoria || "Geral",
           added_by: data.added_by
         };
       });

@@ -85,7 +85,12 @@ export async function POST(request: Request) {
       
       const userRatings = grafo.consultarAdjacencia(targetUserId, 'user');
       const watchedIds = new Set(userRatings.map(r => String(r.toId)));
-      const myGenres = new Set(userRatings.map(r => normalize(grafo.getMovieGenre(r.toId))));
+      // Normaliza todos os gêneros que o usuário já avaliou positivamente (score >= 3)
+      const myGenres = new Set(
+        userRatings
+          .filter(r => r.weight >= 3)
+          .map(r => normalize(grafo.getMovieGenre(r.toId)))
+      );
       
       let allMovies = grafo.getMovies();
       
