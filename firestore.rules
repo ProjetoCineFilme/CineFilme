@@ -30,11 +30,11 @@ service cloud.firestore {
       );
     }
 
-    // 4. Filmes
+    // 4. Filmes (Cadastro livre, sem edição/deleção por usuários comuns)
     match /movies/{movieId} {
       allow read: if true;
-      // Importante: allow write permite create e update para usuários logados
-      allow write: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update, delete: if false; 
     }
 
     // Bloqueio padrão

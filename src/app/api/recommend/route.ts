@@ -75,7 +75,7 @@ export async function POST(request: Request) {
     // 6. Return Top N
     let topNRecommendations = allRecommendations.slice(0, Number(top_n));
 
-    // Fallback logic: if no personalized recommendations, suggest movies from same categories user liked
+    // Fallback logic VERY ROBUST: if no personalized recommendations, suggest movies from same genres or popular ones
     if (topNRecommendations.length < Number(top_n)) {
       const normalize = (s: string) => s ? s.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : "geral";
       
@@ -88,15 +88,24 @@ export async function POST(request: Request) {
         .filter(mid => {
           const sMid = String(mid);
           const genre = normalize(grafo.getMovieGenre(mid));
-          // Not watched, and matches a liked genre (or just any if we need more)
-          return !watchedIds.has(sMid) && !topNRecommendations.some(r => String(r.movieId) === sMid) && (myGenres.has(genre) || myGenres.size === 0);
+          // Not watched, not already recommended
+          const notWatched = !watchedIds.has(sMid);
+          const notInRecs = !topNRecommendations.some(r => String(r.movieId) === sMid);
+          // High preference: Matches my genres. Low preference: Just any movie.
+          return notWatched && notInRecs;
         })
-        .sort(() => Math.random() - 0.5) // Shuffle
+        .sort((a, b) => {
+          const genreA = normalize(grafo.getMovieGenre(a));
+          const genreB = normalize(grafo.getMovieGenre(b));
+          const scoreA = myGenres.has(genreA) ? 2 : 1;
+          const scoreB = myGenres.has(genreB) ? 2 : 1;
+          return scoreB - scoreA || Math.random() - 0.5;
+        })
         .slice(0, Number(top_n) - topNRecommendations.length)
         .map(mid => ({
           movieId: mid,
           title: grafo.getMovieTitle(mid),
-          score: 1.0 // Simple fallback score
+          score: 3.5 // Baseline score for genre matches
         }));
       
       topNRecommendations = [...topNRecommendations, ...additional];
@@ -106,7 +115,7 @@ export async function POST(request: Request) {
       user_id: targetUserId,
       recommendations: topNRecommendations.map(r => ({
         title: r.title,
-        score: r.score
+        score: Number(r.score.toFixed(2))
       }))
     });
   } catch (error) {

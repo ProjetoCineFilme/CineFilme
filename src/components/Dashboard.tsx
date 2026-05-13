@@ -120,7 +120,7 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
       const duplicate = movies.find(m => normalizeTitle(m.title) === normalizedNew);
 
       if (duplicate) {
-        setFeedback(`Este filme já existe como "${duplicate.title}".`);
+        setFeedback(`"${duplicate.title}" já está cadastrado. Procure-o na lista para avaliar!`);
         setNewMovieTitle('');
         setIsAddingMovie(false);
         setSearchTerm(duplicate.title); // Limpa e foca na busca do filme existente
