@@ -120,10 +120,10 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
       const duplicate = movies.find(m => normalizeTitle(m.title) === normalizedNew);
 
       if (duplicate) {
-        setFeedback(`Este filme já existe como "${duplicate.title}". Avalie-o na lista abaixo!`);
+        setFeedback(`Este filme já existe como "${duplicate.title}".`);
         setNewMovieTitle('');
         setIsAddingMovie(false);
-        setSearchTerm(duplicate.title); // Foca no filme existente
+        setSearchTerm(duplicate.title); // Limpa e foca na busca do filme existente
         setTimeout(() => setFeedback(''), 5000);
         return;
       }
@@ -233,20 +233,23 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
   };
 
   const filteredMovies = movies.filter(m => {
-    // Show if:
-    // 1. It's a standard movie (101-108)
+    const sTerm = searchTerm.trim().toLowerCase();
+    
+    // Se estiver pesquisando, mostra qualquer filme que bata com a busca
+    if (sTerm) {
+      return (m.title || "").toLowerCase().includes(sTerm) ||
+             (m.genre || "").toLowerCase().includes(sTerm);
+    }
+
+    // Se não estiver pesquisando, mostra:
+    // 1. Filmes padrão (101-108)
     const isStandard = STANDARD_MOVIE_IDS.includes(Number(m.movie_id));
-    // 2. Added by me
+    // 2. Cadastrados por mim
     const addedByMe = m.added_by === user.uid;
-    // 3. Rated by me
+    // 3. Já avaliados por mim
     const ratedByMe = myRatings.some(r => String(r.movie_id) === String(m.movie_id));
     
-    if (!isStandard && !addedByMe && !ratedByMe) return false;
-
-    const matchesSearch = (m.title || "").toLowerCase().includes((searchTerm || "").toLowerCase()) ||
-                         (m.genre || "").toLowerCase().includes((searchTerm || "").toLowerCase());
-    
-    return matchesSearch;
+    return isStandard || addedByMe || ratedByMe;
   }).slice(0, 12);
 
   return (

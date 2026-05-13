@@ -75,30 +75,31 @@ export async function POST(request: Request) {
     // 6. Return Top N
     let topNRecommendations = allRecommendations.slice(0, Number(top_n));
 
-    // Fallback: se não houver recomendações personalizadas, pegamos filmes populares do mesmo gênero
-    if (topNRecommendations.length === 0) {
+    // Fallback logic: if no personalized recommendations, suggest movies from same categories user liked
+    if (topNRecommendations.length < Number(top_n)) {
       const normalize = (s: string) => s ? s.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : "geral";
       
       const userRatings = grafo.consultarAdjacencia(targetUserId, 'user');
       const watchedIds = new Set(userRatings.map(r => String(r.toId)));
       const myGenres = new Set(userRatings.map(r => normalize(grafo.getMovieGenre(r.toId))));
       
-      const moviesRepo = grafo.getMovies();
-      const genreFallback = moviesRepo
+      const allMovies = grafo.getMovies();
+      const additional = allMovies
         .filter(mid => {
           const sMid = String(mid);
           const genre = normalize(grafo.getMovieGenre(mid));
-          return !watchedIds.has(sMid) && (myGenres.has(genre) || myGenres.size === 0);
+          // Not watched, and matches a liked genre (or just any if we need more)
+          return !watchedIds.has(sMid) && !topNRecommendations.some(r => String(r.movieId) === sMid) && (myGenres.has(genre) || myGenres.size === 0);
         })
-        .slice(0, Number(top_n));
-      
-      if (genreFallback.length > 0) {
-        topNRecommendations = genreFallback.map(mid => ({
+        .sort(() => Math.random() - 0.5) // Shuffle
+        .slice(0, Number(top_n) - topNRecommendations.length)
+        .map(mid => ({
           movieId: mid,
           title: grafo.getMovieTitle(mid),
-          score: 1.0 // Pontuação base para cold start
+          score: 1.0 // Simple fallback score
         }));
-      }
+      
+      topNRecommendations = [...topNRecommendations, ...additional];
     }
 
     return NextResponse.json({
