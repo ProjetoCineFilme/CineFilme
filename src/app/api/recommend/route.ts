@@ -43,10 +43,10 @@ export async function POST(request: Request) {
     if (allUsers.length > 1 && userRatings.length > 0) {
       const similarities: { userId: any; sim: number }[] = [];
       for (const otherUserId of allUsers) {
-        if (String(otherUserId).toLowerCase() === targetIdStr) continue;
-        const sim = calcularSimilaridade(realTargetId, otherUserId, grafo);
+        const sOtherId = String(otherUserId);
+        if (sOtherId.toLowerCase() === targetIdStr) continue;
         
-        // Se houver similaridade de gênero, damos um empurrãozinho extra (boost)
+        const sim = calcularSimilaridade(realTargetId, otherUserId, grafo);
         if (sim > 0) {
           similarities.push({ userId: otherUserId, sim });
         }
@@ -57,22 +57,55 @@ export async function POST(request: Request) {
           .sort((a, b) => b.sim - a.sim)
           .slice(0, Number(k));
 
-        const neighborMap = new Map(topKNeighbors.map(n => [n.userId, n.sim]));
+        const neighborMap = new Map();
+        topKNeighbors.forEach(n => neighborMap.set(String(n.userId), n.sim));
+        
         const neighborIds = topKNeighbors.map(n => n.userId);
-
         const candidates = buscarCandidatos(realTargetId, neighborIds, grafo);
         const allRecommendations = rankear(realTargetId, candidates, neighborMap, grafo);
         
-        // Boost agressivo por gênero nas recomendações
+        // Boost agressivo por gênero
         topNRecommendations = allRecommendations.map(r => {
           const g = normalize(grafo.getMovieGenre(r.movieId));
-          // Se o filme for do gênero que o usuário gosta, triplicamos o score
-          const genreMatch = myGenres.has(g) ? 3.0 : 1.0;
+          const genreMatch = myGenres.has(g) ? 5.0 : 1.0;
           return { ...r, score: r.score * genreMatch };
         })
-        .sort((a, b) => b.score - a.score)
-        .slice(0, Number(top_n));
+        .sort((a, b) => b.score - a.score);
       }
+    }
+
+    // "Super Fallback" Colaborativo: Se a CF tradicional falhou ou trouxe pouco, 
+    // buscamos filmes bem avaliados (nota 5) por QUALQUER outro usuário nos gêneros que eu gosto.
+    if (topNRecommendations.length < Number(top_n)) {
+      const otherUserHighRatings: any[] = [];
+      
+      for (const otherUserId of allUsers) {
+        if (String(otherUserId).toLowerCase() === targetIdStr) continue;
+        
+        const otherRatings = grafo.consultarAdjacencia(otherUserId, 'user');
+        for (const r of otherRatings) {
+          const mid = String(r.toId);
+          if (!watchedIds.has(mid) && r.weight >= 4) {
+             const genre = normalize(grafo.getMovieGenre(mid));
+             if (myGenres.has(genre)) {
+                // Candidato forte!
+                if (!topNRecommendations.some(curr => String(curr.movieId) === mid)) {
+                  otherUserHighRatings.push({
+                    movieId: mid,
+                    title: grafo.getMovieTitle(mid),
+                    score: r.weight * 1.5 // Garante que fique acima dos classics
+                  });
+                }
+             }
+          }
+        }
+      }
+
+      // Adiciona esses candidatos por gênero de outros usuários
+      const uniqueOthers = Array.from(new Map(otherUserHighRatings.map(m => [m.movieId, m])).values())
+        .sort((a, b) => b.score - a.score);
+      
+      topNRecommendations = [...topNRecommendations, ...uniqueOthers];
     }
 
     // Fallback logic: Se não completar top_n, busca outros filmes da base
