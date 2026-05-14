@@ -45,6 +45,8 @@ export async function POST(request: Request) {
       for (const otherUserId of allUsers) {
         if (String(otherUserId).toLowerCase() === targetIdStr) continue;
         const sim = calcularSimilaridade(realTargetId, otherUserId, grafo);
+        
+        // Se houver similaridade de gênero, damos um empurrãozinho extra (boost)
         if (sim > 0) {
           similarities.push({ userId: otherUserId, sim });
         }
@@ -61,10 +63,11 @@ export async function POST(request: Request) {
         const candidates = buscarCandidatos(realTargetId, neighborIds, grafo);
         const allRecommendations = rankear(realTargetId, candidates, neighborMap, grafo);
         
-        // Boost por gênero nas recomendações da CF
+        // Boost agressivo por gênero nas recomendações
         topNRecommendations = allRecommendations.map(r => {
           const g = normalize(grafo.getMovieGenre(r.movieId));
-          const genreMatch = myGenres.has(g) ? 1.5 : 1.0;
+          // Se o filme for do gênero que o usuário gosta, triplicamos o score
+          const genreMatch = myGenres.has(g) ? 3.0 : 1.0;
           return { ...r, score: r.score * genreMatch };
         })
         .sort((a, b) => b.score - a.score)
@@ -85,8 +88,8 @@ export async function POST(request: Request) {
           const genreB = normalize(grafo.getMovieGenre(b));
           
           // Pontuação: Gênero (Prioridade Máxima) > Popularidade
-          const scoreA = myGenres.has(genreA) ? 10000 : 0;
-          const scoreB = myGenres.has(genreB) ? 10000 : 0;
+          const scoreA = myGenres.has(genreA) ? 100000 : 0;
+          const scoreB = myGenres.has(genreB) ? 100000 : 0;
           
           const popA = grafo.consultarAdjacencia(a, 'movie').length;
           const popB = grafo.consultarAdjacencia(b, 'movie').length;
@@ -97,7 +100,7 @@ export async function POST(request: Request) {
         .map(mid => ({
           movieId: mid,
           title: grafo.getMovieTitle(mid),
-          score: myGenres.has(normalize(grafo.getMovieGenre(mid))) ? 4.5 : 3.0
+          score: myGenres.has(normalize(grafo.getMovieGenre(mid))) ? 5.0 : 3.0
         }));
       
       topNRecommendations = [...topNRecommendations, ...additional];
