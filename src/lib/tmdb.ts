@@ -18,7 +18,7 @@ export const getTMDBImageUrl = (path: string | null, size: 'w500' | 'original' =
 };
 
 export async function fetchFromTMDB(endpoint: string, params: Record<string, string> = {}) {
-  const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
+  const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY?.trim();
   if (!apiKey) {
     console.error('TMDB API Key missing in environment variables.');
     return null;

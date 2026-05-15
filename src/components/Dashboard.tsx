@@ -59,12 +59,13 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
   }, []);
 
   const loadTrends = async () => {
-    if (!process.env.NEXT_PUBLIC_TMDB_API_KEY) {
-      setIsApiKeyMissing(true);
-      return;
-    }
     const popular = await getPopularMovies();
-    setPopularMovies(popular);
+    if (popular && popular.length > 0) {
+      setPopularMovies(popular);
+      setIsApiKeyMissing(false);
+    } else if (!process.env.NEXT_PUBLIC_TMDB_API_KEY) {
+      setIsApiKeyMissing(true);
+    }
   };
 
   const fetchData = async () => {
