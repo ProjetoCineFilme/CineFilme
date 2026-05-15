@@ -121,21 +121,40 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
   };
 
   const handleRateMovie = async (tmdbMovie: TMDBMovie, rating: number) => {
+    const handleFirestoreError = (error: unknown, operationType: string, path: string | null) => {
+      const errInfo = {
+        error: error instanceof Error ? error.message : String(error),
+        authInfo: {
+          userId: auth.currentUser?.uid,
+          email: auth.currentUser?.email,
+          emailVerified: auth.currentUser?.emailVerified,
+        },
+        operationType,
+        path
+      };
+      console.error('Firestore Error: ', JSON.stringify(errInfo));
+      return JSON.stringify(errInfo);
+    };
+
     try {
       const uid = profile.user_id;
       const mid = tmdbMovie.id;
       
       // 1. Ensure movie exists in our "movies" collection for the graph loader
       const movieRef = doc(db, "movies", String(mid));
-      await setDoc(movieRef, {
-        movie_id: mid,
-        id: mid,
-        title: tmdbMovie.title,
-        genre: TMDB_GENRES[tmdbMovie.genre_ids?.[0]] || "Geral",
-        poster_path: tmdbMovie.poster_path,
-        overview: tmdbMovie.overview,
-        updated_at: new Date()
-      }, { merge: true });
+      try {
+        await setDoc(movieRef, {
+          movie_id: mid,
+          id: mid,
+          title: tmdbMovie.title,
+          genre: TMDB_GENRES[tmdbMovie.genre_ids?.[0]] || "Geral",
+          poster_path: tmdbMovie.poster_path,
+          overview: tmdbMovie.overview,
+          updated_at: new Date()
+        }, { merge: true });
+      } catch (e) {
+        console.warn("Could not sync movie metadata, continuing with rating...", handleFirestoreError(e, 'write', `movies/${mid}`));
+      }
 
       // 2. Save rating
       const ratingId = `${uid}_${mid}`;
@@ -155,6 +174,7 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
       setSearchTerm('');
       setSelectedMovieId(null);
     } catch (e: any) {
+      const displayErr = handleFirestoreError(e, 'write', 'ratings');
       console.error("Rating error:", e);
       setFeedback(`Erro ao avaliar: ${e.message}`);
     }
