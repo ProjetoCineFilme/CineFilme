@@ -112,17 +112,25 @@ export default function MovieDetails({ movieId, onClose, onRate, userRating }: M
           <div className="lg:w-3/5 p-8 lg:p-12 space-y-8 overflow-y-auto max-h-[80vh] lg:max-h-[90vh]">
             <div className="space-y-4">
               <div className="flex flex-wrap gap-2">
-                {movie.genre_ids.map(gid => (
-                  <span key={gid} className="text-[10px] font-black text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full uppercase tracking-widest">
-                    {TMDB_GENRES[gid]}
-                  </span>
-                ))}
+                {movie.genres ? (
+                  movie.genres.map(g => (
+                    <span key={g.id} className="text-[10px] font-black text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full uppercase tracking-widest">
+                      {g.name}
+                    </span>
+                  ))
+                ) : (
+                  movie.genre_ids?.map(gid => (
+                    <span key={gid} className="text-[10px] font-black text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full uppercase tracking-widest">
+                      {TMDB_GENRES[gid]}
+                    </span>
+                  ))
+                )}
               </div>
               <h2 className="text-4xl lg:text-5xl font-black text-neutral-900 tracking-tighter leading-none">{movie.title}</h2>
               <div className="flex items-center gap-8 text-neutral-500 text-sm font-bold">
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4 text-indigo-400" />
-                  {movie.release_date.split('-')[0]}
+                  {movie.release_date ? movie.release_date.split('-')[0] : 'N/A'}
                 </div>
                 <div className="flex items-center gap-2">
                   <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
