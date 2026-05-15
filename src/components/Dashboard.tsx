@@ -25,6 +25,8 @@ import Link from 'next/link';
 import { searchMovies, getPopularMovies, getTopRatedMovies, TMDBMovie, getTMDBImageUrl, TMDB_GENRES } from '../lib/tmdb';
 import Image from 'next/image';
 
+import MovieDetails from './MovieDetails';
+
 interface Movie {
   movie_id: number;
   title: string;
@@ -50,7 +52,7 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
   const [popularMovies, setPopularMovies] = useState<TMDBMovie[]>([]);
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState('');
-  const [selectedMovie, setSelectedMovie] = useState<TMDBMovie | null>(null);
+  const [selectedMovieId, setSelectedMovieId] = useState<number | null>(null);
   const [isApiKeyMissing, setIsApiKeyMissing] = useState(false);
 
   useEffect(() => {
@@ -151,6 +153,7 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
       fetchData();
       setTmdbResults([]);
       setSearchTerm('');
+      setSelectedMovieId(null);
     } catch (e: any) {
       console.error("Rating error:", e);
       setFeedback(`Erro ao avaliar: ${e.message}`);
@@ -267,7 +270,11 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
                     const myRating = myRatings.find(r => String(r.movie_id) === String(movie.id))?.rating;
                     
                     return (
-                      <div key={movie.id} className="flex gap-4 p-4 rounded-3xl border border-neutral-100 bg-white hover:border-indigo-200 hover:shadow-xl hover:shadow-indigo-500/5 transition-all group">
+                      <div 
+                        key={movie.id} 
+                        onClick={() => setSelectedMovieId(movie.id)}
+                        className="flex gap-4 p-4 rounded-3xl border border-neutral-100 bg-white hover:border-indigo-200 hover:shadow-xl hover:shadow-indigo-500/5 transition-all group cursor-pointer"
+                      >
                         <div className="w-24 h-36 bg-neutral-100 rounded-2xl overflow-hidden flex-shrink-0 shadow-sm relative">
                           {poster ? (
                             <Image 
@@ -334,7 +341,7 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
                 <div 
                   key={movie.id} 
                   className="group relative aspect-[2/3] rounded-[2rem] overflow-hidden shadow-lg hover:shadow-2xl transition-all cursor-pointer"
-                  onClick={() => handleSearch(movie.title)}
+                  onClick={() => setSelectedMovieId(movie.id)}
                 >
                   <Image 
                     src={getTMDBImageUrl(movie.poster_path) || ""} 
@@ -416,7 +423,8 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     key={i} 
-                    className="flex items-center gap-5 group"
+                    onClick={() => setSelectedMovieId(rating.movie_id)}
+                    className="flex items-center gap-5 group cursor-pointer"
                   >
                     <div className="w-12 h-18 bg-neutral-50 rounded-xl overflow-hidden flex-shrink-0 border border-neutral-100 relative">
                       {movie?.poster_path ? (
@@ -470,6 +478,16 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Movie Details Modal */}
+      {selectedMovieId && (
+        <MovieDetails 
+          movieId={selectedMovieId} 
+          onClose={() => setSelectedMovieId(null)}
+          onRate={handleRateMovie}
+          userRating={myRatings.find(r => String(r.movie_id) === String(selectedMovieId))?.rating}
+        />
+      )}
     </div>
   );
 }

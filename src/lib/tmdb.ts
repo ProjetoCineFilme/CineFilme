@@ -10,9 +10,24 @@ export interface TMDBMovie {
   release_date: string;
   vote_average: number;
   genre_ids: number[];
+  videos?: {
+    results: {
+      key: string;
+      site: string;
+      type: string;
+    }[];
+  };
+  "watch/providers"?: {
+    results: Record<string, {
+      link: string;
+      flatrate?: { provider_name: string; logo_path: string }[];
+      buy?: { provider_name: string; logo_path: string }[];
+      rent?: { provider_name: string; logo_path: string }[];
+    }>;
+  };
 }
 
-export const getTMDBImageUrl = (path: string | null, size: 'w500' | 'original' = 'w500') => {
+export const getTMDBImageUrl = (path: string | null, size: 'w92' | 'w154' | 'w185' | 'w342' | 'w500' | 'w780' | 'original' = 'w500') => {
   if (!path) return null;
   return `${TMDB_IMAGE_BASE_URL}/${size}${path}`;
 };
@@ -58,7 +73,9 @@ export async function searchMovies(query: string) {
 }
 
 export async function getMovieDetails(movieId: number) {
-  return await fetchFromTMDB(`/movie/${movieId}`, { append_to_response: 'videos' });
+  return await fetchFromTMDB(`/movie/${movieId}`, { 
+    append_to_response: 'videos,watch/providers' 
+  }) as TMDBMovie | null;
 }
 
 export const TMDB_GENRES: Record<number, string> = {
