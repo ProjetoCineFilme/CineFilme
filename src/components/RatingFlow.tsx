@@ -199,6 +199,7 @@ export default function RatingFlow({ onComplete }: { onComplete: (userId: any) =
             id: Number(mid),
             title: movieData.title,
             genre: TMDB_GENRES[movieData.genre_ids?.[0]] || "Geral",
+            genres: (movieData.genre_ids || []).map((id: number) => TMDB_GENRES[id]).filter(Boolean),
             poster_path: movieData.poster_path,
             overview: movieData.overview,
             updated_at: new Date()

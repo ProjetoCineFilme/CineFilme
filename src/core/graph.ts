@@ -1,6 +1,3 @@
-/**
- * BiGraph class to represent a bipartite graph between Users and Movies.
- */
 export type NodeType = 'user' | 'movie';
 export type NodeId = string | number;
 
@@ -13,7 +10,7 @@ export class BiGraph {
   private userNodes: Map<string, Edge[]> = new Map();
   private movieNodes: Map<string, Edge[]> = new Map();
   private movieTitles: Map<string, string> = new Map();
-  private movieGenres: Map<string, string> = new Map();
+  private movieGenres: Map<string, string[]> = new Map();
   private moviePosters: Map<string, string> = new Map();
 
   adicionarVertice(id: NodeId, tipo: NodeType) {
@@ -58,11 +55,21 @@ export class BiGraph {
   }
 
   setMovieGenre(movieId: NodeId, genre: string) {
-    this.movieGenres.set(String(movieId), genre);
+    const existing = this.movieGenres.get(String(movieId)) || [];
+    if (!existing.includes(genre)) existing.push(genre);
+    this.movieGenres.set(String(movieId), existing);
+  }
+
+  setMovieGenres(movieId: NodeId, genres: string[]) {
+    this.movieGenres.set(String(movieId), genres);
   }
 
   getMovieGenre(movieId: NodeId): string {
-    return this.movieGenres.get(String(movieId)) || "Sem Gênero";
+    return this.movieGenres.get(String(movieId))?.[0] || "Geral";
+  }
+
+  getMovieGenres(movieId: NodeId): string[] {
+    return this.movieGenres.get(String(movieId)) || [];
   }
 
   setMoviePoster(movieId: NodeId, posterPath: string) {

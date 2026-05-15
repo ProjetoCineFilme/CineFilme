@@ -148,6 +148,7 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
           id: mid,
           title: tmdbMovie.title,
           genre: TMDB_GENRES[tmdbMovie.genre_ids?.[0]] || "Geral",
+          genres: (tmdbMovie.genre_ids || []).map(id => TMDB_GENRES[id]).filter(Boolean),
           poster_path: tmdbMovie.poster_path,
           overview: tmdbMovie.overview,
           updated_at: new Date()

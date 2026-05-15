@@ -2,17 +2,14 @@ import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { BiGraph } from '../core/graph';
 
-/**
- * Loads the ratings and movie titles from Firestore and builds the BiGraph.
- */
 export async function carregarGrafo(): Promise<BiGraph> {
   const grafo = new BiGraph();
 
   // 1. Load Ratings
   const ratingsSnapshot = await getDocs(collection(db, 'ratings'));
-  
+
   const uniqueRatings = new Map<string, { uid: string, mid: string, val: number }>();
-  
+
   ratingsSnapshot.forEach((doc) => {
     const data = doc.data();
     const rawUid = data.user_id ?? data.userId ?? data.uid;
@@ -39,14 +36,25 @@ export async function carregarGrafo(): Promise<BiGraph> {
     if (rawMid !== undefined) {
       const mid = String(rawMid);
       grafo.adicionarVertice(mid, 'movie');
-      
+
       const title = data.title ?? data.nome;
-      const genre = data.genre ?? data.genero ?? data.categoria;
       const poster = data.poster_path ?? data.cartaz ?? data.poster;
 
       if (title) grafo.setMovieTitle(mid, title);
-      if (genre) grafo.setMovieGenre(mid, genre);
       if (poster) grafo.setMoviePoster(mid, poster);
+
+      // Support both genres[] array and legacy single genre string
+      const rawGenres = data.genres ?? data.generos;
+      const rawGenre = data.genre ?? data.genero ?? data.categoria;
+
+      let genreArray: string[] = [];
+      if (rawGenres && Array.isArray(rawGenres) && rawGenres.length > 0) {
+        genreArray = rawGenres.filter(Boolean);
+      } else if (rawGenre) {
+        genreArray = [rawGenre];
+      }
+
+      if (genreArray.length > 0) grafo.setMovieGenres(mid, genreArray);
     }
   });
 
