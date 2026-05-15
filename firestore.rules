@@ -2,42 +2,40 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Funções de ajuda
-    function isSignedIn() { return request.auth != null; }
-    function isOwner(uid) { return isSignedIn() && request.auth.uid == uid; }
+    // Helpers
+    function isSignedIn() {
+      return request.auth != null;
+    }
 
-    // 1. Contador de Usuários (Metadata)
+    // 1. Contador de IDs (Metadata)
     match /metadata/{docId} {
       allow read, write: if isSignedIn();
     }
 
     // 2. Perfis de Usuário
-    match /users/{uid} {
+    match /users/{userId} {
       allow read: if isSignedIn();
-      allow write: if isOwner(uid);
+      allow write: if isSignedIn() && request.auth.uid == userId;
     }
 
     // 3. Avaliações (Ratings)
     match /ratings/{ratingId} {
       allow read: if true;
-      // Permite criar se estiver logado
       allow create: if isSignedIn();
-      // Permite atualizar ou deletar se o UID ou o e-mail baterem com o logado
       allow update, delete: if isSignedIn() && (
-        (resource.data.uid == request.auth.uid) ||
-        (resource.data.user_email == request.auth.token.email) ||
-        (resource.data.user_id == request.auth.uid)
+        resource.data.uid == request.auth.uid || 
+        resource.data.user_email == request.auth.token.email
       );
     }
 
-    // 4. Filmes (Cadastro compartilhado)
+    // 4. Repositório de Filmes Real (TMDB Sync)
     match /movies/{movieId} {
       allow read: if true;
       allow create, update: if isSignedIn();
       allow delete: if false; 
     }
 
-    // Bloqueio padrão
+    // Bloqueio padrão de segurança
     match /{document=**} {
       allow read, write: if false;
     }
