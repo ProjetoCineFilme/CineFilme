@@ -14,6 +14,7 @@ export class BiGraph {
   private movieNodes: Map<string, Edge[]> = new Map();
   private movieTitles: Map<string, string> = new Map();
   private movieGenres: Map<string, string> = new Map();
+  private moviePosters: Map<string, string> = new Map();
 
   adicionarVertice(id: NodeId, tipo: NodeType) {
     const sId = String(id);
@@ -62,6 +63,14 @@ export class BiGraph {
 
   getMovieGenre(movieId: NodeId): string {
     return this.movieGenres.get(String(movieId)) || "Sem Gênero";
+  }
+
+  setMoviePoster(movieId: NodeId, posterPath: string) {
+    this.moviePosters.set(String(movieId), posterPath);
+  }
+
+  getMoviePoster(movieId: NodeId): string | null {
+    return this.moviePosters.get(String(movieId)) || null;
   }
 
   consultarAdjacencia(id: NodeId, tipo: NodeType): Edge[] {

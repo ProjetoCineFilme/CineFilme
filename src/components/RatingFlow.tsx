@@ -5,27 +5,37 @@ import { db, auth } from '../lib/firebase';
 import { collection, addDoc, getDocs, query, where, doc, getDoc, setDoc, runTransaction } from 'firebase/firestore';
 import { signInWithPopup, GoogleAuthProvider, User, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowRight, Star, CheckCircle2, ChevronRight, LogIn, Mail, Lock, UserPlus, Loader2 } from 'lucide-react';
-
-const POPULAR_MOVIES = [
-  { movie_id: 101, title: "O Poderoso Chefão", genre: "Crime" },
-  { movie_id: 102, title: "Pulp Fiction", genre: "Crime" },
-  { movie_id: 103, title: "Interstellar", genre: "Ficção Científica" },
-  { movie_id: 104, title: "Batman: O Cavaleiro das Trevas", genre: "Super-herói" },
-  { movie_id: 105, title: "Clube da Luta", genre: "Drama" },
-  { movie_id: 106, title: "Matrix", genre: "Ficção Científica" },
-  { movie_id: 107, title: "Parasita", genre: "Suspense" },
-  { movie_id: 108, title: "Cidade de Deus", genre: "Crime" },
-];
+import { ArrowRight, Star, CheckCircle2, ChevronRight, LogIn, Mail, Lock, UserPlus, Loader2, Film } from 'lucide-react';
+import { getPopularMovies, TMDBMovie, TMDB_GENRES } from '../lib/tmdb';
 
 export default function RatingFlow({ onComplete }: { onComplete: (userId: any) => void }) {
   const [user, setUser] = useState<User | null>(null);
   const [step, setStep] = useState<'login' | 'signup' | 'rating' | 'complete'>('login');
   const [ratings, setRatings] = useState<Record<string, number>>({});
+  const [onboardingMovies, setOnboardingMovies] = useState<TMDBMovie[]>([]);
   const [assignedId, setAssignedId] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [checkingProfile, setCheckingProfile] = useState(true);
   const [submitError, setSubmitError] = useState('');
+  
+  useEffect(() => {
+    async function loadOnboarding() {
+      const popular = await getPopularMovies();
+      if (popular && popular.length > 0) {
+        setOnboardingMovies(popular.slice(0, 10));
+      } else {
+        // Fallback para quando a API falha ou chave está ausente
+        setOnboardingMovies([
+          { id: 101, title: "O Poderoso Chefão", genre_ids: [80, 18], overview: "Drama épico sobre uma família mafiosa.", poster_path: "/3bhkrjRseERfsMZ7XRwvZqR9YvL.jpg", backdrop_path: null, release_date: "1972-03-14", vote_average: 8.7 },
+          { id: 102, title: "Pulp Fiction", genre_ids: [80, 53], overview: "Várias histórias de crime se entrelaçam.", poster_path: "/d5iIlDwy0uS6vOPrbZ0H092oTqf.jpg", backdrop_path: null, release_date: "1994-09-10", vote_average: 8.5 },
+          { id: 103, title: "Interestelar", genre_ids: [12, 18, 878], overview: "Viagem espacial para salvar a humanidade.", poster_path: "/nCbk9uGr59SCYN6B6sLRbkpYQGR.jpg", backdrop_path: null, release_date: "2014-11-05", vote_average: 8.4 },
+          { id: 104, title: "Batman: O Cavaleiro das Trevas", genre_ids: [18, 28, 80, 53], overview: "Batman enfrenta o Coringa em Gotham.", poster_path: "/qJ2tW6WMUDp9sDeuGgYvOTvHtmT.jpg", backdrop_path: null, release_date: "2008-07-16", vote_average: 8.5 },
+          { id: 105, title: "A Origem", genre_ids: [28, 12, 878], overview: "Invasão de sonhos e extração de segredos.", poster_path: "/8IB2wSTnbtpuln7vD6kz3qUo3Ky.jpg", backdrop_path: null, release_date: "2010-07-15", vote_average: 8.3 }
+        ] as any);
+      }
+    }
+    loadOnboarding();
+  }, []);
   
   // Form states
   const [email, setEmail] = useState('');
@@ -180,39 +190,31 @@ export default function RatingFlow({ onComplete }: { onComplete: (userId: any) =
         const mid = movieId;
         const uid = assignedId;
         
-        // Ensure movie exists in collection for dashboard titles
-        const movieData = POPULAR_MOVIES.find(m => String(m.movie_id) === String(mid));
+        // Ensure movie exists in collection
+        const movieData = onboardingMovies.find(m => String(m.id) === String(mid));
         if (movieData) {
-          const mPath = `movies/${String(mid)}`;
-          try {
-            const mDocRef = doc(db, "movies", String(mid));
-            await setDoc(mDocRef, {
-              movie_id: mid,
-              title: movieData.title,
-              genre: movieData.genre,
-              updated_at: new Date()
-            }, { merge: true });
-          } catch (e) {
-            handleFirestoreError(e, 'write', mPath);
-          }
+          const mDocRef = doc(db, "movies", String(mid));
+          await setDoc(mDocRef, {
+            movie_id: Number(mid),
+            id: Number(mid),
+            title: movieData.title,
+            genre: TMDB_GENRES[movieData.genre_ids?.[0]] || "Geral",
+            poster_path: movieData.poster_path,
+            overview: movieData.overview,
+            updated_at: new Date()
+          }, { merge: true });
         }
 
         const rId = `${uid}_${mid}`;
-        const rPath = `ratings/${rId}`;
-        try {
-          await setDoc(doc(db, "ratings", rId), {
-            user_id: uid,
-            movie_id: mid,
-            rating: Number(rating),
-            user_email: user.email,
-            uid: user.uid,
-            created_at: new Date()
-          });
-        } catch (e) {
-          handleFirestoreError(e, 'write', rPath);
-        }
+        await setDoc(doc(db, "ratings", rId), {
+          user_id: uid,
+          movie_id: Number(mid),
+          rating: Number(rating),
+          user_email: user.email,
+          uid: user.uid,
+          created_at: new Date()
+        });
       }
-
       setStep('complete');
     } catch (error: any) {
       console.error("Error saving ratings", error);
@@ -337,19 +339,19 @@ export default function RatingFlow({ onComplete }: { onComplete: (userId: any) =
             </div>
 
             <div className="flex-1 overflow-y-auto pr-2 space-y-3 max-h-[350px] custom-scrollbar">
-              {POPULAR_MOVIES.map((movie) => (
-                <div key={movie.movie_id} className="flex items-center justify-between p-4 rounded-2xl border border-neutral-50 bg-neutral-50/50 hover:bg-white hover:border-indigo-100 hover:shadow-sm transition-all group">
-                  <span className="text-sm font-bold text-neutral-700">{movie.title}</span>
+              {onboardingMovies.map((movie) => (
+                <div key={movie.id} className="flex items-center justify-between p-4 rounded-2xl border border-neutral-50 bg-neutral-50/50 hover:bg-white hover:border-indigo-100 hover:shadow-sm transition-all group">
+                  <span className="text-sm font-bold text-neutral-700 truncate max-w-[200px]">{movie.title}</span>
                   <div className="flex gap-1">
                     {[1, 2, 3, 4, 5].map((star) => (
                       <button
                         key={star}
-                        onClick={() => handleRate(movie.movie_id, star)}
+                        onClick={() => handleRate(movie.id, star)}
                         className={`p-1 transition-all hover:scale-125 ${
-                          (ratings[movie.movie_id] || 0) >= star ? 'text-amber-400' : 'text-neutral-200'
+                          (ratings[movie.id] || 0) >= star ? 'text-amber-400' : 'text-neutral-200'
                         }`}
                       >
-                        <Star className={`w-4 h-4 ${(ratings[movie.movie_id] || 0) >= star ? 'fill-amber-400' : ''}`} />
+                        <Star className={`w-4 h-4 ${(ratings[movie.id] || 0) >= star ? 'fill-amber-400' : ''}`} />
                       </button>
                     ))}
                   </div>

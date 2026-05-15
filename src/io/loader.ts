@@ -8,15 +8,13 @@ import { BiGraph } from '../core/graph';
 export async function carregarGrafo(): Promise<BiGraph> {
   const grafo = new BiGraph();
 
-  // 1. Load Ratings (Deduplicate to keep only latest per user-movie)
+  // 1. Load Ratings
   const ratingsSnapshot = await getDocs(collection(db, 'ratings'));
-  console.log(`Loader: Found ${ratingsSnapshot.size} raw ratings`);
   
-    const uniqueRatings = new Map<string, { uid: string, mid: string, val: number }>();
+  const uniqueRatings = new Map<string, { uid: string, mid: string, val: number }>();
   
   ratingsSnapshot.forEach((doc) => {
     const data = doc.data();
-    // Suporte a múltiplas chaves e tipos de ID
     const rawUid = data.user_id ?? data.userId ?? data.uid;
     const rawMid = data.movie_id ?? data.movieId ?? data.mid;
     const rawRating = data.rating ?? data.nota;
@@ -33,11 +31,10 @@ export async function carregarGrafo(): Promise<BiGraph> {
     grafo.adicionarAresta(uid, mid, val);
   });
 
-  // 2. Load Movies (Titles & Genres)
+  // 2. Load Movies (Titles, Genres, Posters)
   const moviesSnapshot = await getDocs(collection(db, 'movies'));
   moviesSnapshot.forEach((doc) => {
     const data = doc.data();
-    // Prioriza campos explícitos, mas usa o ID do documento como fallback final
     const rawMid = data.movie_id ?? data.movieId ?? data.id ?? doc.id;
     if (rawMid !== undefined) {
       const mid = String(rawMid);
@@ -45,13 +42,11 @@ export async function carregarGrafo(): Promise<BiGraph> {
       
       const title = data.title ?? data.nome;
       const genre = data.genre ?? data.genero ?? data.categoria;
+      const poster = data.poster_path ?? data.cartaz ?? data.poster;
 
-      if (title) {
-        grafo.setMovieTitle(mid, title);
-      }
-      if (genre) {
-        grafo.setMovieGenre(mid, genre);
-      }
+      if (title) grafo.setMovieTitle(mid, title);
+      if (genre) grafo.setMovieGenre(mid, genre);
+      if (poster) grafo.setMoviePoster(mid, poster);
     }
   });
 

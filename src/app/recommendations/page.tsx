@@ -2,11 +2,15 @@
 
 import React, { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Loader2, ArrowLeft, Star, Film, AlertCircle, Sparkles } from 'lucide-react';
+import { Loader2, ArrowLeft, Star, Film, AlertCircle, Sparkles, LayoutGrid } from 'lucide-react';
 import { motion } from 'motion/react';
+import { getTMDBImageUrl } from '../../lib/tmdb';
+import Image from 'next/image';
 
 interface Recommendation {
   title: string;
+  genre: string;
+  poster_path: string | null;
   score: number;
 }
 
@@ -133,38 +137,55 @@ function RecommendationsList() {
         recommendations.map((rec, index) => (
           <motion.div
             key={index}
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.05 }}
-            className="bg-white p-5 rounded-2xl shadow-sm border border-neutral-200 flex items-center justify-between hover:border-indigo-200 transition-colors group"
+            className="bg-white p-6 rounded-[2.5rem] shadow-sm border border-neutral-100 flex items-center justify-between hover:border-indigo-200 transition-all group hover:shadow-xl hover:shadow-indigo-500/5"
           >
-            <div className="flex items-center gap-4">
-              <span className="text-xl font-black text-neutral-200 group-hover:text-indigo-100 transition-colors tabular-nums">
+            <div className="flex items-center gap-6">
+              <span className="text-3xl font-black text-neutral-100 group-hover:text-indigo-100 transition-colors tabular-nums min-w-[40px]">
                 {(index + 1).toString().padStart(2, '0')}
               </span>
-              <div className="bg-indigo-50 p-2.5 rounded-lg">
-                <Film className="w-5 h-5 text-indigo-600" />
+              
+              <div className="w-20 h-28 bg-neutral-50 rounded-2xl overflow-hidden shadow-sm relative flex-shrink-0">
+                {rec.poster_path ? (
+                  <Image 
+                    src={getTMDBImageUrl(rec.poster_path)} 
+                    alt={rec.title} 
+                    fill 
+                    className="object-cover group-hover:scale-110 transition-transform duration-500"
+                    referrerPolicy="no-referrer"
+                  />
+                ) : (
+                  <Film className="w-6 h-6 text-neutral-200 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+                )}
               </div>
+
               <div>
-                <h3 className="font-bold text-neutral-900 text-lg">{rec.title}</h3>
-                <div className="flex items-center gap-1 mt-0.5">
-                   <div className="flex gap-0.5">
-                     {[...Array(5)].map((_, i) => (
-                       <Star 
-                         key={i} 
-                         className={`w-3 h-3 ${i < Math.round(rec.score) ? 'text-amber-400 fill-amber-400' : 'text-neutral-200'}`} 
-                       />
-                     ))}
-                   </div>
-                   <span className="text-xs text-neutral-400 ml-1 font-mono uppercase tracking-tighter">Est. Rating</span>
+                <h3 className="font-black text-neutral-900 text-xl leading-tight mb-1">{rec.title}</h3>
+                <div className="flex items-center gap-3">
+                  <span className="text-[10px] font-black text-indigo-500 bg-indigo-50 px-2.5 py-1 rounded-full uppercase tracking-widest">
+                    {rec.genre || "Geral"}
+                  </span>
+                  <div className="flex items-center gap-1 mt-0.5">
+                    <div className="flex gap-0.5">
+                      {[...Array(5)].map((_, i) => (
+                        <Star 
+                          key={i} 
+                          className={`w-3 h-3 ${i < Math.round(rec.score) ? 'text-amber-400 fill-amber-400' : 'text-neutral-200'}`} 
+                        />
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
+            
             <div className="text-right">
-              <div className="text-2xl font-black text-indigo-600 font-mono tracking-tighter">
+              <div className="text-3xl font-black text-indigo-600 tracking-tighter">
                 {rec.score.toFixed(2)}
               </div>
-              <div className="text-[10px] text-neutral-400 font-medium uppercase tracking-widest">Score</div>
+              <div className="text-[10px] text-neutral-300 font-black uppercase tracking-widest">Confiança</div>
             </div>
           </motion.div>
         ))

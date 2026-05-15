@@ -1,6 +1,6 @@
 {
   "name": "CineFilme",
-  "description": "Sistema de recomendação de filmes baseado em teoria dos grafos e similaridade de cosseno.",
+  "description": "Sistema avançado de recomendação de filmes usando Grafos e integração com TMDB API.",
   "requestFramePermissions": [],
   "majorCapabilities": []
 }
