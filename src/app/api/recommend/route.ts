@@ -2,8 +2,39 @@ import { NextResponse } from 'next/server';
 import { carregarGrafo } from '../../../io/loader';
 import { calcularSimilaridade } from '../../../core/similarity';
 
+const TMDB_GENRES: Record<number, string> = {
+  28: 'Ação', 12: 'Aventura', 16: 'Animação', 35: 'Comédia', 80: 'Crime',
+  99: 'Documentário', 18: 'Drama', 10751: 'Família', 14: 'Fantasia',
+  36: 'História', 27: 'Terror', 10402: 'Música', 9648: 'Mistério',
+  10749: 'Romance', 878: 'Ficção Científica', 10770: 'Cinema TV',
+  53: 'Suspense', 10752: 'Guerra', 37: 'Faroeste',
+};
+
 const normalize = (s: string) =>
   s ? s.trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '') : 'geral';
+
+interface TMDBMovie {
+  id: number;
+  title: string;
+  poster_path: string | null;
+  genre_ids: number[];
+  vote_average: number;
+}
+
+async function fetchTMDBPopular(): Promise<TMDBMovie[]> {
+  const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY?.trim();
+  if (!apiKey) return [];
+  try {
+    const res = await fetch(
+      `https://api.themoviedb.org/3/movie/popular?api_key=${apiKey}&language=pt-BR&page=1`
+    );
+    if (!res.ok) return [];
+    const data = await res.json();
+    return (data.results as TMDBMovie[]) || [];
+  } catch {
+    return [];
+  }
+}
 
 export async function POST(request: Request) {
   try {
@@ -16,12 +47,13 @@ export async function POST(request: Request) {
     const grafo = await carregarGrafo();
     const allUsers = grafo.getUsers();
     const targetIdStr = String(user_id).toLowerCase();
-    const realTargetId = allUsers.find(u => String(u).toLowerCase() === targetIdStr) || user_id;
+    const realTargetId =
+      allUsers.find(u => String(u).toLowerCase() === targetIdStr) || user_id;
 
     const userRatings = grafo.consultarAdjacencia(realTargetId, 'user');
     const watchedIds = new Set(userRatings.map(r => String(r.toId)));
 
-    // Collect favorite genres (rating >= 3) from ALL genres of each rated movie
+    // Build favorite genre set from ALL genres of each liked movie
     const favoriteGenres = new Set<string>();
     for (const r of userRatings) {
       if (r.weight >= 3) {
@@ -31,25 +63,18 @@ export async function POST(request: Request) {
       }
     }
 
-    // Collaborative filtering: gather candidates from all other users
+    // ── Step 1: collaborative filtering ────────────────────────────────────
     const candidates = new Map<string, {
-      movieId: string;
-      title: string;
-      genre: string;
-      genres: string[];
-      posterPath: string | null;
-      score: number;
-      isGenreMatch: boolean;
+      movieId: string; title: string; genre: string; genres: string[];
+      posterPath: string | null; score: number; isGenreMatch: boolean;
     }>();
 
-    for (const otherUserId of allUsers) {
-      if (String(otherUserId).toLowerCase() === targetIdStr) continue;
-
-      const sim = calcularSimilaridade(realTargetId, otherUserId, grafo);
+    for (const otherId of allUsers) {
+      if (String(otherId).toLowerCase() === targetIdStr) continue;
+      const sim = calcularSimilaridade(realTargetId, otherId, grafo);
       if (sim <= 0) continue;
 
-      const otherRatings = grafo.consultarAdjacencia(otherUserId, 'user');
-      for (const r of otherRatings) {
+      for (const r of grafo.consultarAdjacencia(otherId, 'user')) {
         const mid = String(r.toId);
         if (watchedIds.has(mid)) continue;
 
@@ -73,8 +98,10 @@ export async function POST(request: Request) {
       }
     }
 
-    // Franchise title bonus: movies whose title contains words from a watched title
-    const watchedTitles = userRatings.map(r => grafo.getMovieTitle(r.toId).toLowerCase());
+    // Franchise title bonus
+    const watchedTitles = userRatings.map(r =>
+      grafo.getMovieTitle(r.toId).toLowerCase()
+    );
     for (const cand of candidates.values()) {
       const ct = cand.title.toLowerCase();
       for (const wt of watchedTitles) {
@@ -87,7 +114,7 @@ export async function POST(request: Request) {
 
     let results = Array.from(candidates.values()).sort((a, b) => b.score - a.score);
 
-    // Fallback: if not enough personalized results, fill with popular unseen movies
+    // ── Step 2: Firestore popular fallback ─────────────────────────────────
     if (results.length < Number(top_n)) {
       const movieStats = new Map<string, { count: number; ratingSum: number }>();
       for (const u of allUsers) {
@@ -101,27 +128,63 @@ export async function POST(request: Request) {
       }
 
       const popular = grafo.getMovies()
-        .filter(mid => !watchedIds.has(String(mid)) && !candidates.has(String(mid)))
+        .map(mid => String(mid))
+        .filter(mid => !watchedIds.has(mid) && !candidates.has(mid))
         .map(mid => {
-          const sMid = String(mid);
-          const s = movieStats.get(sMid) || { count: 0, ratingSum: 0 };
-          const movieGenres = grafo.getMovieGenres(sMid);
+          const s = movieStats.get(mid) || { count: 0, ratingSum: 0 };
+          const movieGenres = grafo.getMovieGenres(mid);
+          const title = grafo.getMovieTitle(mid);
           return {
-            movieId: sMid,
-            title: grafo.getMovieTitle(sMid),
-            genre: grafo.getMovieGenre(sMid),
+            movieId: mid, title,
+            genre: grafo.getMovieGenre(mid),
             genres: movieGenres,
-            posterPath: grafo.getMoviePoster(sMid),
+            posterPath: grafo.getMoviePoster(mid),
             score: s.count > 0 ? (s.ratingSum / s.count) * Math.log10(s.count + 1) : 0,
             isGenreMatch: movieGenres.some(g => favoriteGenres.has(normalize(g))),
           };
         })
-        .filter(m => m.title !== `Filme #${m.movieId}`)
+        .filter(m => !m.title.startsWith('Filme #'))
         .sort((a, b) => b.score - a.score);
 
       for (const p of popular) {
         if (results.length >= Number(top_n)) break;
         results.push(p);
+      }
+    }
+
+    // ── Step 3: TMDB popular fallback (always guarantees results) ──────────
+    if (results.length < Number(top_n)) {
+      const tmdbMovies = await fetchTMDBPopular();
+
+      // Sort: genre matches first, then by vote_average
+      const sorted = tmdbMovies
+        .filter(m => !watchedIds.has(String(m.id)))
+        .map(m => {
+          const movieGenres = (m.genre_ids || [])
+            .map(id => TMDB_GENRES[id])
+            .filter(Boolean) as string[];
+          const isGenreMatch = movieGenres.some(g => favoriteGenres.has(normalize(g)));
+          return { m, movieGenres, isGenreMatch };
+        })
+        .sort((a, b) => {
+          if (a.isGenreMatch !== b.isGenreMatch) return a.isGenreMatch ? -1 : 1;
+          return b.m.vote_average - a.m.vote_average;
+        });
+
+      for (const { m, movieGenres, isGenreMatch } of sorted) {
+        if (results.length >= Number(top_n)) break;
+        const mid = String(m.id);
+        if (results.find(r => r.movieId === mid)) continue;
+
+        results.push({
+          movieId: mid,
+          title: m.title,
+          genre: TMDB_GENRES[m.genre_ids?.[0]] || 'Geral',
+          genres: movieGenres,
+          posterPath: m.poster_path,
+          score: m.vote_average,
+          isGenreMatch,
+        });
       }
     }
 
@@ -142,6 +205,9 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error('Recommendation error:', error);
-    return NextResponse.json({ error: 'Erro interno no servidor de recomendação.' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Erro interno no servidor de recomendação.' },
+      { status: 500 }
+    );
   }
 }
