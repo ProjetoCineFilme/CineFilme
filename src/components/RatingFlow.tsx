@@ -3,9 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import { db, auth } from '../lib/firebase';
 import { collection, getDocs, query, where, doc, getDoc, setDoc, runTransaction } from 'firebase/firestore';
-import { signInWithPopup, GoogleAuthProvider, User, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithPopup, GoogleAuthProvider, User, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowRight, CheckCircle2, ChevronRight, LogIn, Mail, Lock, UserPlus, Loader2, Film } from 'lucide-react';
+import { ArrowRight, CheckCircle2, ChevronRight, LogIn, Mail, Lock, UserPlus, Loader2, Film, User as UserIcon } from 'lucide-react';
 import { getMoviesByGenre, TMDBMovie, TMDB_GENRES, getTMDBImageUrl } from '../lib/tmdb';
 import Image from 'next/image';
 import StarRating from './StarRating';
@@ -40,6 +40,7 @@ export default function RatingFlow({ onComplete }: { onComplete: (userId: any) =
   const [checkingProfile, setCheckingProfile] = useState(true);
   const [submitError, setSubmitError] = useState('');
 
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [authError, setAuthError] = useState('');
@@ -121,6 +122,7 @@ export default function RatingFlow({ onComplete }: { onComplete: (userId: any) =
             }
             await setDoc(userDocRef, {
               user_id: newNumericId,
+              name: u.displayName || '',
               email: u.email,
               uid: u.uid,
               created_at: new Date(),
@@ -164,7 +166,10 @@ export default function RatingFlow({ onComplete }: { onComplete: (userId: any) =
     setLoading(true);
     try {
       if (isSignup) {
-        await createUserWithEmailAndPassword(auth, email, password);
+        const cred = await createUserWithEmailAndPassword(auth, email, password);
+        if (name.trim()) {
+          await updateProfile(cred.user, { displayName: name.trim() });
+        }
       } else {
         await signInWithEmailAndPassword(auth, email, password);
       }
@@ -265,6 +270,19 @@ export default function RatingFlow({ onComplete }: { onComplete: (userId: any) =
             </div>
 
             <div className="space-y-4">
+              {/* Nome — só no cadastro */}
+              {step === 'signup' && (
+                <div className="relative">
+                  <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+                  <input
+                    type="text"
+                    placeholder="Seu nome"
+                    value={name}
+                    onChange={e => setName(e.target.value)}
+                    className="w-full pl-12 pr-4 py-3 rounded-xl border border-neutral-100 bg-neutral-50 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none"
+                  />
+                </div>
+              )}
               <div className="relative">
                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
                 <input type="email" placeholder="Seu e-mail" value={email} onChange={e => setEmail(e.target.value)}

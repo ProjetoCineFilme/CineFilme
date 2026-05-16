@@ -243,7 +243,7 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
 
         <div className="flex items-center gap-3 self-end sm:self-auto">
           <Link
-            href={`/recommendations?user_id=${profile.user_id}&user_name=${encodeURIComponent(profile.name || 'Membro')}&top_n=10`}
+            href={`/recommendations?user_id=${profile.user_id}&user_name=${encodeURIComponent(profile.name || 'Membro')}&top_n=50`}
             className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 md:px-8 py-3 md:py-4 rounded-2xl font-black flex items-center gap-2 md:gap-3 transition-all shadow-2xl shadow-indigo-100 active:scale-95 group overflow-hidden relative text-sm md:text-base"
           >
             <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
@@ -515,7 +515,10 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
              </div>
              <div className="relative z-10 space-y-8">
                <div>
-                  <h3 className="text-lg font-black tracking-tight mb-8">Seu Repositório</h3>
+                  <h3 className="text-lg font-black tracking-tight">
+                    {profile.name ? `Olá, ${profile.name.split(' ')[0]}!` : 'Seu Repositório'}
+                  </h3>
+                  <p className="text-indigo-300 text-xs mb-6 mt-0.5 font-medium">{profile.email || ''}</p>
                   <div className="grid grid-cols-2 gap-8">
                     <div>
                       <p className="text-indigo-200 text-[10px] font-black uppercase tracking-widest mb-1">Avaliações</p>
