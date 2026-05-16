@@ -173,8 +173,6 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
       setFeedback('Avaliação salva!');
       setTimeout(() => setFeedback(''), 3000);
       fetchData();
-      setTmdbResults([]);
-      setSearchTerm('');
       setSelectedMovieId(null);
     } catch (e: any) {
       const displayErr = handleFirestoreError(e, 'write', 'ratings');

@@ -67,6 +67,7 @@ export async function POST(request: Request) {
     const candidates = new Map<string, {
       movieId: string; title: string; genre: string; genres: string[];
       posterPath: string | null; score: number; isGenreMatch: boolean;
+      source: 'taste' | 'community' | 'trending';
     }>();
 
     for (const otherId of allUsers) {
@@ -91,6 +92,7 @@ export async function POST(request: Request) {
             posterPath: grafo.getMoviePoster(mid),
             score: contribution,
             isGenreMatch,
+            source: 'taste',
           });
         } else {
           candidates.get(mid)!.score += contribution;
@@ -141,6 +143,7 @@ export async function POST(request: Request) {
             posterPath: grafo.getMoviePoster(mid),
             score: s.count > 0 ? (s.ratingSum / s.count) * Math.log10(s.count + 1) : 0,
             isGenreMatch: movieGenres.some(g => favoriteGenres.has(normalize(g))),
+            source: 'community' as const,
           };
         })
         .filter(m => !m.title.startsWith('Filme #'))
@@ -184,6 +187,7 @@ export async function POST(request: Request) {
           posterPath: m.poster_path,
           score: m.vote_average,
           isGenreMatch,
+          source: 'trending' as const,
         });
       }
     }
@@ -198,6 +202,7 @@ export async function POST(request: Request) {
         genre: r.genre,
         genres: r.genres,
         poster_path: r.posterPath,
+        source: r.source,
         score: r.isGenreMatch
           ? parseFloat((4.7 + Math.random() * 0.3).toFixed(2))
           : parseFloat((4.0 + Math.random() * 0.7).toFixed(2)),

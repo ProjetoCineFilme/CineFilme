@@ -10,12 +10,21 @@ import { db, auth } from '../../lib/firebase';
 import { doc, setDoc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import MovieDetails from '../../components/MovieDetails';
 
+type RecommendationSource = 'taste' | 'community' | 'trending';
+
+const SOURCE_LABEL: Record<RecommendationSource, { label: string; color: string }> = {
+  taste:     { label: 'Combinação de gostos',    color: 'text-violet-600 bg-violet-50' },
+  community: { label: 'Em alta na comunidade',   color: 'text-amber-600  bg-amber-50'  },
+  trending:  { label: 'Em alta no mundo',         color: 'text-teal-600   bg-teal-50'   },
+};
+
 interface Recommendation {
   movieId: string;
   title: string;
   genre: string;
   genres: string[];
   poster_path: string | null;
+  source: RecommendationSource;
   score: number;
 }
 
@@ -232,7 +241,13 @@ function RecommendationsList() {
                       </span>
                     )}
                   </div>
-                  <p className="text-[10px] text-indigo-400 font-bold mt-1.5 opacity-0 group-hover:opacity-100 transition-opacity hidden sm:flex items-center gap-1">
+                  {/* Source badge — subtle, no-TMDB mention */}
+                  {rec.source && SOURCE_LABEL[rec.source] && (
+                    <p className={`text-[9px] font-bold mt-1.5 px-2 py-0.5 rounded-full inline-block ${SOURCE_LABEL[rec.source].color}`}>
+                      {SOURCE_LABEL[rec.source].label}
+                    </p>
+                  )}
+                  <p className="text-[10px] text-indigo-400 font-bold mt-1 opacity-0 group-hover:opacity-100 transition-opacity hidden sm:flex items-center gap-1">
                     <span>▶</span> Ver trailer e detalhes
                   </p>
                 </div>
