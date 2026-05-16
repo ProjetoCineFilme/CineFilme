@@ -100,8 +100,8 @@ function RecommendationsList() {
         movie_id: mid,
         id: mid,
         title: movie.title,
-        genre: TMDB_GENRES[movie.genre_ids?.[0]] || 'Geral',
-        genres: (movie.genre_ids || []).map(id => TMDB_GENRES[id]).filter(Boolean),
+        genre: movie.genres?.[0]?.name || TMDB_GENRES[movie.genre_ids?.[0]] || 'Geral',
+        genres: movie.genres?.map(g => g.name).filter(Boolean) || (movie.genre_ids || []).map(id => TMDB_GENRES[id]).filter(Boolean),
         poster_path: movie.poster_path,
         overview: movie.overview,
         updated_at: new Date(),
@@ -118,6 +118,9 @@ function RecommendationsList() {
         const filtered = prev.filter(r => String(r.movie_id) !== String(mid));
         return [...filtered, { movie_id: mid, rating }];
       });
+      // Remove from recommendations list — user has now watched/rated this film
+      setRecommendations(prev => prev.filter(r => r.movieId !== String(mid)));
+      setSelectedMovieId(null);
     } catch (e: any) {
       console.error('Error saving rating:', e);
     }
@@ -175,7 +178,9 @@ function RecommendationsList() {
             </button>
           </div>
         ) : (
-          recommendations.map((rec, index) => {
+          recommendations
+            .filter(rec => !myRatings.find(r => String(r.movie_id) === rec.movieId))
+            .map((rec, index) => {
             const mid = Number(rec.movieId);
             const userRating = myRatings.find(r => String(r.movie_id) === String(rec.movieId))?.rating;
 
