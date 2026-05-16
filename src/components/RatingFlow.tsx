@@ -5,8 +5,9 @@ import { db, auth } from '../lib/firebase';
 import { collection, addDoc, getDocs, query, where, doc, getDoc, setDoc, runTransaction } from 'firebase/firestore';
 import { signInWithPopup, GoogleAuthProvider, User, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowRight, Star, CheckCircle2, ChevronRight, LogIn, Mail, Lock, UserPlus, Loader2, Film } from 'lucide-react';
+import { ArrowRight, CheckCircle2, ChevronRight, LogIn, Mail, Lock, UserPlus, Loader2, Film } from 'lucide-react';
 import { getPopularMovies, TMDBMovie, TMDB_GENRES } from '../lib/tmdb';
+import StarRating from './StarRating';
 
 export default function RatingFlow({ onComplete }: { onComplete: (userId: any) => void }) {
   const [user, setUser] = useState<User | null>(null);
@@ -343,19 +344,11 @@ export default function RatingFlow({ onComplete }: { onComplete: (userId: any) =
               {onboardingMovies.map((movie) => (
                 <div key={movie.id} className="flex items-center justify-between p-4 rounded-2xl border border-neutral-50 bg-neutral-50/50 hover:bg-white hover:border-indigo-100 hover:shadow-sm transition-all group">
                   <span className="text-sm font-bold text-neutral-700 truncate max-w-[200px]">{movie.title}</span>
-                  <div className="flex gap-1">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <button
-                        key={star}
-                        onClick={() => handleRate(movie.id, star)}
-                        className={`p-1 transition-all hover:scale-125 ${
-                          (ratings[movie.id] || 0) >= star ? 'text-amber-400' : 'text-neutral-200'
-                        }`}
-                      >
-                        <Star className={`w-4 h-4 ${(ratings[movie.id] || 0) >= star ? 'fill-amber-400' : ''}`} />
-                      </button>
-                    ))}
-                  </div>
+                  <StarRating
+                    value={ratings[movie.id] || 0}
+                    onChange={(r) => handleRate(movie.id, r)}
+                    size="sm"
+                  />
                 </div>
               ))}
             </div>

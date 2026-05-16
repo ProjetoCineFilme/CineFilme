@@ -26,6 +26,7 @@ import { searchMovies, getPopularMovies, getTopRatedMovies, TMDBMovie, getTMDBIm
 import Image from 'next/image';
 
 import MovieDetails from './MovieDetails';
+import StarRating from './StarRating';
 
 interface Movie {
   movie_id: number;
@@ -54,6 +55,7 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
   const [feedback, setFeedback] = useState('');
   const [selectedMovieId, setSelectedMovieId] = useState<number | null>(null);
   const [isApiKeyMissing, setIsApiKeyMissing] = useState(false);
+  const [activeTab, setActiveTab] = useState<'explore' | 'my-movies'>('explore');
 
   useEffect(() => {
     fetchData();
@@ -204,6 +206,26 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
     }
   };
 
+  const handleUpdateRating = async (movieId: number, rating: number) => {
+    try {
+      const uid = profile.user_id;
+      const ratingId = `${uid}_${movieId}`;
+      await setDoc(doc(db, "ratings", ratingId), {
+        user_id: uid,
+        movie_id: movieId,
+        rating,
+        user_email: user.email,
+        uid: user.uid,
+        created_at: new Date()
+      });
+      setFeedback('Avaliação atualizada!');
+      setTimeout(() => setFeedback(''), 3000);
+      fetchData();
+    } catch (e: any) {
+      setFeedback(`Erro: ${e.message}`);
+    }
+  };
+
   return (
     <div className="max-w-7xl mx-auto p-4 md:p-12 font-sans bg-neutral-50 min-h-screen">
       {/* Header */}
@@ -238,7 +260,110 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
         </div>
       </header>
 
+      {/* Tab Navigation */}
+      <nav className="flex gap-3 mb-8">
+        <button
+          onClick={() => setActiveTab('explore')}
+          className={`px-6 py-3 rounded-2xl font-black text-sm transition-all ${
+            activeTab === 'explore'
+              ? 'bg-neutral-900 text-white shadow-lg'
+              : 'bg-white text-neutral-400 border border-neutral-100 hover:border-neutral-200'
+          }`}
+        >
+          Explorar
+        </button>
+        <button
+          onClick={() => setActiveTab('my-movies')}
+          className={`px-6 py-3 rounded-2xl font-black text-sm transition-all flex items-center gap-2 ${
+            activeTab === 'my-movies'
+              ? 'bg-neutral-900 text-white shadow-lg'
+              : 'bg-white text-neutral-400 border border-neutral-100 hover:border-neutral-200'
+          }`}
+        >
+          <History className="w-4 h-4" />
+          Meus Filmes
+          {myRatings.length > 0 && (
+            <span className={`text-xs px-2 py-0.5 rounded-full font-black ${
+              activeTab === 'my-movies' ? 'bg-white/20 text-white' : 'bg-indigo-50 text-indigo-600'
+            }`}>
+              {myRatings.length}
+            </span>
+          )}
+        </button>
+      </nav>
+
+      {/* Meus Filmes Tab */}
+      {activeTab === 'my-movies' && (
+        <div>
+          {myRatings.length === 0 ? (
+            <div className="py-24 text-center bg-white rounded-[3rem] border border-neutral-100">
+              <Film className="w-12 h-12 text-neutral-200 mx-auto mb-4" />
+              <p className="text-neutral-400 font-black text-sm">Você ainda não avaliou nenhum filme.</p>
+              <button
+                onClick={() => setActiveTab('explore')}
+                className="mt-6 px-6 py-3 bg-indigo-600 text-white rounded-2xl font-black text-sm hover:bg-indigo-700 transition-all"
+              >
+                Explorar filmes
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+              {myRatings.map((rating) => {
+                const movie = movies.find(m => String(m.movie_id) === String(rating.movie_id));
+                return (
+                  <div
+                    key={rating.movie_id}
+                    className="bg-white rounded-3xl overflow-hidden border border-neutral-100 shadow-sm hover:shadow-xl hover:shadow-neutral-200/80 transition-all group"
+                  >
+                    <div
+                      className="relative aspect-[2/3] bg-neutral-100 cursor-pointer"
+                      onClick={() => setSelectedMovieId(rating.movie_id)}
+                    >
+                      {movie?.poster_path ? (
+                        <Image
+                          src={getTMDBImageUrl(movie.poster_path) || ''}
+                          alt={movie.title}
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform duration-500"
+                          referrerPolicy="no-referrer"
+                        />
+                      ) : (
+                        <Film className="w-8 h-8 text-neutral-300 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+                      )}
+                    </div>
+                    <div className="p-3 space-y-2">
+                      <h4
+                        className="font-black text-neutral-800 text-xs leading-tight line-clamp-2 cursor-pointer hover:text-indigo-600 transition-colors"
+                        onClick={() => setSelectedMovieId(rating.movie_id)}
+                      >
+                        {movie?.title || `Filme #${rating.movie_id}`}
+                      </h4>
+                      {movie?.genre && (
+                        <span className="text-[9px] font-black text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded uppercase tracking-tighter inline-block">
+                          {movie.genre}
+                        </span>
+                      )}
+                      <div onClick={e => e.stopPropagation()}>
+                        <StarRating
+                          value={rating.rating}
+                          onChange={(r) => handleUpdateRating(rating.movie_id, r)}
+                          size="sm"
+                        />
+                        <p className="text-[9px] text-neutral-400 mt-1 font-medium">
+                          Nota: {rating.rating} ★
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Main Content Grid */}
+      {activeTab === 'explore' && (
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
         {/* Search & Results Section */}
@@ -321,24 +446,15 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
                             </div>
                           </div>
                           
-                          <div className="space-y-2">
-                             <div className="flex gap-0.5">
-                               {[1, 2, 3, 4, 5].map(star => {
-                                 const active = (myRating || 0) >= star;
-                                 return (
-                                   <button 
-                                     key={star}
-                                     onClick={() => handleRateMovie(movie, star)}
-                                     className={`p-0.5 transition-all hover:scale-125 ${
-                                       active ? 'text-amber-400' : 'text-neutral-200 hover:text-amber-300'
-                                     }`}
-                                   >
-                                     <Star className={`w-5 h-5 ${active ? 'fill-amber-400' : ''}`} />
-                                   </button>
-                                 );
-                               })}
-                             </div>
-                             <p className="text-[10px] text-neutral-400 font-bold italic">Toque para avaliar</p>
+                          <div className="space-y-2" onClick={e => e.stopPropagation()}>
+                            <StarRating
+                              value={myRating || 0}
+                              onChange={(r) => handleRateMovie(movie, r)}
+                              size="sm"
+                            />
+                            <p className="text-[10px] text-neutral-400 font-bold italic">
+                              {myRating ? `Sua nota: ${myRating} ★` : 'Toque para avaliar'}
+                            </p>
                           </div>
                         </div>
                       </div>
@@ -484,6 +600,7 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
 
         </div>
       </div>
+      )}
 
       {/* Floating Notifications */}
       <AnimatePresence>

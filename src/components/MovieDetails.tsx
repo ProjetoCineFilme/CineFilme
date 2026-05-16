@@ -2,19 +2,21 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { 
-  X, 
-  Star, 
-  Play, 
-  Calendar, 
-  Globe, 
+import {
+  X,
+  Star,
+  Play,
+  Calendar,
+  Globe,
   Info,
   Tv,
   ExternalLink,
-  Loader2
+  Loader2,
+  Users
 } from 'lucide-react';
 import { getMovieDetails, TMDBMovie, getTMDBImageUrl, TMDB_GENRES } from '../lib/tmdb';
 import Image from 'next/image';
+import StarRating from './StarRating';
 
 interface MovieDetailsProps {
   movieId: number;
@@ -214,30 +216,54 @@ export default function MovieDetails({ movieId, onClose, onRate, userRating }: M
               </div>
             )}
 
+            {/* Cast */}
+            {movie.credits?.cast && movie.credits.cast.length > 0 && (
+              <div className="space-y-4">
+                <h3 className="text-xs font-black text-neutral-400 uppercase tracking-widest flex items-center gap-2">
+                  <Users className="w-4 h-4" /> Elenco
+                </h3>
+                <div className="flex gap-4 overflow-x-auto pb-2">
+                  {movie.credits.cast.slice(0, 8).map(actor => (
+                    <div key={actor.id} className="flex-shrink-0 text-center w-16">
+                      <div className="w-14 h-14 rounded-full overflow-hidden bg-neutral-100 mx-auto mb-2 border-2 border-neutral-100">
+                        {actor.profile_path ? (
+                          <Image
+                            src={getTMDBImageUrl(actor.profile_path, 'w185') || ''}
+                            alt={actor.name}
+                            width={56}
+                            height={56}
+                            className="object-cover w-full h-full"
+                            referrerPolicy="no-referrer"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <Users className="w-6 h-6 text-neutral-300" />
+                          </div>
+                        )}
+                      </div>
+                      <p className="text-[9px] font-black text-neutral-700 leading-tight line-clamp-2">{actor.name}</p>
+                      <p className="text-[8px] text-neutral-400 italic leading-tight line-clamp-1 mt-0.5">{actor.character}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* User Rating */}
             <div className="pt-8 border-t border-neutral-100">
-               <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                 <div>
-                    <h3 className="text-lg font-black text-neutral-900 tracking-tight">Sua Avaliação</h3>
-                    <p className="text-neutral-400 text-xs font-medium">Como você avalia este filme?</p>
-                 </div>
-                 <div className="flex gap-2">
-                   {[1, 2, 3, 4, 5].map(star => {
-                     const active = (userRating || 0) >= star;
-                     return (
-                       <button 
-                         key={star}
-                         onClick={() => onRate(movie, star)}
-                         className={`p-2 rounded-2xl transition-all hover:scale-110 ${
-                           active ? 'bg-amber-50 text-amber-400' : 'bg-neutral-50 text-neutral-200 hover:text-amber-300'
-                         }`}
-                       >
-                         <Star className={`w-8 h-8 ${active ? 'fill-amber-400' : ''}`} />
-                       </button>
-                     );
-                   })}
-                 </div>
-               </div>
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div>
+                  <h3 className="text-lg font-black text-neutral-900 tracking-tight">Sua Avaliação</h3>
+                  <p className="text-neutral-400 text-xs font-medium">
+                    {userRating ? `Sua nota atual: ${userRating} ★` : 'Como você avalia este filme?'}
+                  </p>
+                </div>
+                <StarRating
+                  value={userRating || 0}
+                  onChange={(r) => onRate(movie, r)}
+                  size="lg"
+                />
+              </div>
             </div>
           </div>
         </div>
