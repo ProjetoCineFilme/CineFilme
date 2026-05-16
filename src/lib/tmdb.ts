@@ -76,6 +76,15 @@ export async function searchMovies(query: string) {
   return data?.results as TMDBMovie[] || [];
 }
 
+export async function getMoviesByGenre(genreId: number): Promise<TMDBMovie[]> {
+  const data = await fetchFromTMDB('/discover/movie', {
+    with_genres: String(genreId),
+    sort_by: 'popularity.desc',
+    'vote_count.gte': '100',
+  });
+  return data?.results as TMDBMovie[] || [];
+}
+
 export async function getMovieDetails(movieId: number) {
   return await fetchFromTMDB(`/movie/${movieId}`, {
     append_to_response: 'videos,watch/providers,credits'

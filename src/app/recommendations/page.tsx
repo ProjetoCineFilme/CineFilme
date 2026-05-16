@@ -152,16 +152,17 @@ function RecommendationsList() {
   return (
     <>
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
-        <header className="flex items-center justify-between mb-8">
+        <header className="flex items-center justify-between mb-6 md:mb-8 gap-4">
           <button
             onClick={() => router.push('/')}
-            className="flex items-center gap-2 text-neutral-600 hover:text-neutral-900 font-medium transition-colors group"
+            className="flex items-center gap-2 text-neutral-600 hover:text-neutral-900 font-medium transition-colors group flex-shrink-0"
           >
-            <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" /> Voltar
+            <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+            <span className="hidden sm:inline">Voltar</span>
           </button>
           <div className="text-right">
-            <h1 className="text-2xl font-bold text-neutral-900">Recomendações para {userName}</h1>
-            <p className="text-neutral-500 text-sm">Baseadas em seu perfil de comportamento</p>
+            <h1 className="text-lg md:text-2xl font-bold text-neutral-900 leading-tight">Recomendações para {userName}</h1>
+            <p className="text-neutral-500 text-xs md:text-sm">Baseadas em seu perfil</p>
           </div>
         </header>
 
@@ -191,58 +192,57 @@ function RecommendationsList() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
                 onClick={() => setSelectedMovieId(mid)}
-                className="bg-white p-6 rounded-[2.5rem] shadow-sm border border-neutral-100 flex items-center justify-between hover:border-indigo-200 transition-all group hover:shadow-xl hover:shadow-indigo-500/5 cursor-pointer"
+                className="bg-white p-4 md:p-6 rounded-2xl md:rounded-[2.5rem] shadow-sm border border-neutral-100 flex items-center gap-3 md:gap-6 hover:border-indigo-200 transition-all group hover:shadow-xl hover:shadow-indigo-500/5 cursor-pointer"
               >
-                <div className="flex items-center gap-6">
-                  <span className="text-3xl font-black text-neutral-100 group-hover:text-indigo-100 transition-colors tabular-nums min-w-[40px]">
-                    {(index + 1).toString().padStart(2, '0')}
-                  </span>
+                {/* Rank */}
+                <span className="text-xl md:text-3xl font-black text-neutral-100 group-hover:text-indigo-100 transition-colors tabular-nums min-w-[28px] md:min-w-[40px] flex-shrink-0">
+                  {(index + 1).toString().padStart(2, '0')}
+                </span>
 
-                  <div className="w-20 h-28 bg-neutral-50 rounded-2xl overflow-hidden shadow-sm relative flex-shrink-0">
-                    {rec.poster_path ? (
-                      <Image
-                        src={getTMDBImageUrl(rec.poster_path)}
-                        alt={rec.title}
-                        fill
-                        className="object-cover group-hover:scale-110 transition-transform duration-500"
-                        referrerPolicy="no-referrer"
-                      />
-                    ) : (
-                      <Film className="w-6 h-6 text-neutral-200 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
-                    )}
-                  </div>
-
-                  <div>
-                    <h3 className="font-black text-neutral-900 text-xl leading-tight mb-1">{rec.title}</h3>
-                    <div className="flex items-center gap-3 flex-wrap">
-                      <span className="text-[10px] font-black text-indigo-500 bg-indigo-50 px-2.5 py-1 rounded-full uppercase tracking-widest">
-                        {rec.genre || 'Geral'}
-                      </span>
-                      <div className="flex gap-0.5 mt-0.5">
-                        {[...Array(5)].map((_, i) => (
-                          <Star
-                            key={i}
-                            className={`w-3 h-3 ${i < Math.round(rec.score) ? 'text-amber-400 fill-amber-400' : 'text-neutral-200'}`}
-                          />
-                        ))}
-                      </div>
-                      {userRating && (
-                        <span className="text-[10px] font-black text-green-600 bg-green-50 px-2.5 py-1 rounded-full uppercase tracking-widest">
-                          Sua nota: {userRating} ★
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-xs text-indigo-400 font-bold mt-2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
-                      <span>▶</span> Clique para ver trailer e detalhes
-                    </p>
-                  </div>
+                {/* Poster */}
+                <div className="w-14 h-20 md:w-20 md:h-28 bg-neutral-50 rounded-xl md:rounded-2xl overflow-hidden shadow-sm relative flex-shrink-0">
+                  {rec.poster_path ? (
+                    <Image
+                      src={getTMDBImageUrl(rec.poster_path)}
+                      alt={rec.title}
+                      fill
+                      className="object-cover group-hover:scale-110 transition-transform duration-500"
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : (
+                    <Film className="w-5 h-5 text-neutral-200 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+                  )}
                 </div>
 
-                <div className="text-right flex-shrink-0 ml-4">
-                  <div className="text-3xl font-black text-indigo-600 tracking-tighter">
+                {/* Info */}
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-black text-neutral-900 text-base md:text-xl leading-tight mb-1 line-clamp-2">{rec.title}</h3>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-[9px] md:text-[10px] font-black text-indigo-500 bg-indigo-50 px-2 py-0.5 md:px-2.5 md:py-1 rounded-full uppercase tracking-widest">
+                      {rec.genre || 'Geral'}
+                    </span>
+                    <div className="flex gap-0.5">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} className={`w-2.5 h-2.5 md:w-3 md:h-3 ${i < Math.round(rec.score) ? 'text-amber-400 fill-amber-400' : 'text-neutral-200'}`} />
+                      ))}
+                    </div>
+                    {userRating && (
+                      <span className="text-[9px] font-black text-green-600 bg-green-50 px-2 py-0.5 rounded-full uppercase tracking-widest">
+                        Sua nota: {userRating}★
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[10px] text-indigo-400 font-bold mt-1.5 opacity-0 group-hover:opacity-100 transition-opacity hidden sm:flex items-center gap-1">
+                    <span>▶</span> Ver trailer e detalhes
+                  </p>
+                </div>
+
+                {/* Score */}
+                <div className="text-right flex-shrink-0">
+                  <div className="text-xl md:text-3xl font-black text-indigo-600 tracking-tighter">
                     {rec.score.toFixed(2)}
                   </div>
-                  <div className="text-[10px] text-neutral-300 font-black uppercase tracking-widest">Confiança</div>
+                  <div className="text-[9px] md:text-[10px] text-neutral-300 font-black uppercase tracking-widest">Conf.</div>
                 </div>
               </motion.div>
             );
@@ -264,7 +264,7 @@ function RecommendationsList() {
 
 export default function RecommendationsPage() {
   return (
-    <div className="min-h-screen bg-neutral-100 p-6 md:p-12 font-sans">
+    <div className="min-h-screen bg-neutral-100 p-3 md:p-12 font-sans">
       <div className="max-w-4xl mx-auto">
         <Suspense fallback={
           <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl shadow-sm border border-neutral-200">

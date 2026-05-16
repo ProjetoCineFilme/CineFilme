@@ -227,44 +227,47 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
   };
 
   return (
-    <div className="max-w-7xl mx-auto p-4 md:p-12 font-sans bg-neutral-50 min-h-screen">
+    <div className="max-w-7xl mx-auto p-3 md:p-12 font-sans bg-neutral-50 min-h-screen">
       {/* Header */}
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12 bg-white p-8 rounded-[2.5rem] shadow-sm border border-neutral-100">
-        <div className="flex items-center gap-5">
-          <div className="bg-indigo-600 p-4 rounded-[1.5rem] shadow-xl shadow-indigo-100">
-            <Film className="w-8 h-8 text-white" />
+      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 md:mb-12 bg-white p-5 md:p-8 rounded-[1.5rem] md:rounded-[2.5rem] shadow-sm border border-neutral-100">
+        <div className="flex items-center gap-4">
+          <div className="bg-indigo-600 p-3 md:p-4 rounded-[1rem] md:rounded-[1.5rem] shadow-xl shadow-indigo-100 flex-shrink-0">
+            <Film className="w-6 h-6 md:w-8 md:h-8 text-white" />
           </div>
           <div>
-            <h1 className="text-4xl font-black text-neutral-900 tracking-tighter">CineFilme <span className="text-indigo-200">AI</span></h1>
+            <h1 className="text-2xl md:text-4xl font-black text-neutral-900 tracking-tighter">CineFilme <span className="text-indigo-200">AI</span></h1>
             <p className="text-neutral-400 text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2 mt-1">
-              <UserIcon className="w-3 h-3 text-indigo-400" /> <span className="bg-neutral-50 px-3 py-1 rounded-full border border-neutral-100">{profile.name || "Membro"}</span>
+              <UserIcon className="w-3 h-3 text-indigo-400" />
+              <span className="bg-neutral-50 px-3 py-1 rounded-full border border-neutral-100 truncate max-w-[140px] sm:max-w-none">{profile.name || 'Membro'}</span>
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
-          <Link 
-            href={`/recommendations?user_id=${profile.user_id}&user_name=${encodeURIComponent(profile.name || "Membro")}&top_n=10`}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 rounded-2xl font-black flex items-center gap-3 transition-all shadow-2xl shadow-indigo-100 active:scale-95 group overflow-hidden relative"
+        <div className="flex items-center gap-3 self-end sm:self-auto">
+          <Link
+            href={`/recommendations?user_id=${profile.user_id}&user_name=${encodeURIComponent(profile.name || 'Membro')}&top_n=10`}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 md:px-8 py-3 md:py-4 rounded-2xl font-black flex items-center gap-2 md:gap-3 transition-all shadow-2xl shadow-indigo-100 active:scale-95 group overflow-hidden relative text-sm md:text-base"
           >
             <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-            <Sparkles className="w-5 h-5 relative z-10" /> <span className="relative z-10">Ver Recomendações</span>
+            <Sparkles className="w-4 h-4 md:w-5 md:h-5 relative z-10 flex-shrink-0" />
+            <span className="relative z-10 hidden xs:inline sm:hidden md:inline">Ver Recomendações</span>
+            <span className="relative z-10 xs:hidden sm:inline md:hidden">Recomen.</span>
           </Link>
-          <button 
+          <button
             onClick={() => auth.signOut()}
-            className="bg-white border border-neutral-200 p-4 rounded-2xl hover:bg-red-50 hover:border-red-100 hover:text-red-500 transition-all active:scale-95 shadow-sm"
+            className="bg-white border border-neutral-200 p-3 md:p-4 rounded-2xl hover:bg-red-50 hover:border-red-100 hover:text-red-500 transition-all active:scale-95 shadow-sm flex-shrink-0"
             title="Sair"
           >
-            <LogOut className="w-6 h-6" />
+            <LogOut className="w-5 h-5 md:w-6 md:h-6" />
           </button>
         </div>
       </header>
 
       {/* Tab Navigation */}
-      <nav className="flex gap-3 mb-8">
+      <nav className="flex gap-2 md:gap-3 mb-6 md:mb-8">
         <button
           onClick={() => setActiveTab('explore')}
-          className={`px-6 py-3 rounded-2xl font-black text-sm transition-all ${
+          className={`flex-1 sm:flex-none px-4 md:px-6 py-3 rounded-2xl font-black text-sm transition-all ${
             activeTab === 'explore'
               ? 'bg-neutral-900 text-white shadow-lg'
               : 'bg-white text-neutral-400 border border-neutral-100 hover:border-neutral-200'
@@ -274,7 +277,7 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
         </button>
         <button
           onClick={() => setActiveTab('my-movies')}
-          className={`px-6 py-3 rounded-2xl font-black text-sm transition-all flex items-center gap-2 ${
+          className={`flex-1 sm:flex-none px-4 md:px-6 py-3 rounded-2xl font-black text-sm transition-all flex items-center justify-center gap-2 ${
             activeTab === 'my-movies'
               ? 'bg-neutral-900 text-white shadow-lg'
               : 'bg-white text-neutral-400 border border-neutral-100 hover:border-neutral-200'
@@ -370,27 +373,27 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
         <div className="lg:col-span-8 space-y-8">
           
           {/* Search Box */}
-          <section className="bg-white rounded-[3rem] p-10 shadow-sm border border-neutral-100 ring-1 ring-neutral-50">
-            <div className="flex items-center justify-between mb-8">
+          <section className="bg-white rounded-[1.5rem] md:rounded-[3rem] p-5 md:p-10 shadow-sm border border-neutral-100 ring-1 ring-neutral-50">
+            <div className="flex items-center justify-between mb-5 md:mb-8">
               <div>
-                <h2 className="text-2xl font-black text-neutral-900 tracking-tight flex items-center gap-3">
-                  <Search className="w-6 h-6 text-indigo-600" /> O que quer assistir?
+                <h2 className="text-lg md:text-2xl font-black text-neutral-900 tracking-tight flex items-center gap-2 md:gap-3">
+                  <Search className="w-5 h-5 md:w-6 md:h-6 text-indigo-600" /> O que quer assistir?
                 </h2>
-                <p className="text-neutral-400 text-sm mt-1">Pesquise em milhões de filmes reais via TMDB.</p>
+                <p className="text-neutral-400 text-xs md:text-sm mt-1">Pesquise em milhões de filmes via TMDB.</p>
               </div>
             </div>
 
             <div className="relative group">
-              <input 
-                type="text" 
-                placeholder={isApiKeyMissing ? "Configure a TMDB_API_KEY no menu Settings..." : "Ex: Oppenheimer, Batman, Interestelar..."}
+              <input
+                type="text"
+                placeholder={isApiKeyMissing ? 'Configure a TMDB_API_KEY...' : 'Ex: Oppenheimer, Batman...'}
                 value={searchTerm}
                 disabled={isApiKeyMissing}
                 onChange={(e) => handleSearch(e.target.value)}
-                className={`w-full px-8 py-6 pl-16 rounded-[2rem] border-2 border-neutral-50 bg-neutral-50/50 focus:bg-white focus:ring-8 focus:ring-indigo-500/5 focus:border-indigo-500 transition-all outline-none text-xl font-medium placeholder:text-neutral-300 ${isApiKeyMissing ? 'cursor-not-allowed opacity-50' : ''}`}
+                className={`w-full px-4 py-4 pl-12 md:px-8 md:py-6 md:pl-16 rounded-2xl md:rounded-[2rem] border-2 border-neutral-50 bg-neutral-50/50 focus:bg-white focus:ring-4 md:focus:ring-8 focus:ring-indigo-500/5 focus:border-indigo-500 transition-all outline-none text-base md:text-xl font-medium placeholder:text-neutral-300 ${isApiKeyMissing ? 'cursor-not-allowed opacity-50' : ''}`}
               />
-              <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-6 h-6 text-neutral-300 group-focus-within:text-indigo-400 transition-colors" />
-              {loading && <Loader2 className="absolute right-6 top-1/2 -translate-y-1/2 w-6 h-6 text-indigo-600 animate-spin" />}
+              <Search className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 w-5 h-5 md:w-6 md:h-6 text-neutral-300 group-focus-within:text-indigo-400 transition-colors" />
+              {loading && <Loader2 className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 w-5 h-5 md:w-6 md:h-6 text-indigo-600 animate-spin" />}
             </div>
 
             {isApiKeyMissing && (

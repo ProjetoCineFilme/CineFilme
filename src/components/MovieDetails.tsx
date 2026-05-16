@@ -58,21 +58,21 @@ export default function MovieDetails({ movieId, onClose, onRate, userRating }: M
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[60] flex items-center justify-center p-4 md:p-8 overflow-y-auto">
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, scale: 0.9, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        className="bg-white rounded-[3rem] w-full max-w-5xl overflow-hidden relative shadow-2xl"
+        className="bg-white rounded-[2rem] md:rounded-[3rem] w-full max-w-5xl overflow-hidden relative shadow-2xl"
       >
-        <button 
+        <button
           onClick={onClose}
-          className="absolute top-6 right-6 z-10 bg-black/20 hover:bg-black/40 backdrop-blur-md text-white p-3 rounded-full transition-all"
+          className="absolute top-3 right-3 md:top-6 md:right-6 z-10 bg-black/30 hover:bg-black/50 backdrop-blur-md text-white p-2 md:p-3 rounded-full transition-all"
         >
-          <X className="w-6 h-6" />
+          <X className="w-5 h-5 md:w-6 md:h-6" />
         </button>
 
         <div className="flex flex-col lg:flex-row h-full">
-          {/* Post/Video Section */}
-          <div className="lg:w-2/5 relative aspect-video lg:aspect-auto h-[400px] lg:h-auto bg-neutral-900">
+          {/* Poster / Video section */}
+          <div className="lg:w-2/5 relative h-[200px] sm:h-[280px] lg:h-auto lg:aspect-auto bg-neutral-900">
             {showTrailer && trailer ? (
               <iframe 
                 src={`https://www.youtube.com/embed/${trailer.key}?autoplay=1`}
@@ -110,8 +110,8 @@ export default function MovieDetails({ movieId, onClose, onRate, userRating }: M
             )}
           </div>
 
-          {/* Info Section */}
-          <div className="lg:w-3/5 p-8 lg:p-12 space-y-8 overflow-y-auto max-h-[80vh] lg:max-h-[90vh]">
+          {/* Info section */}
+          <div className="lg:w-3/5 p-5 md:p-8 lg:p-12 space-y-6 md:space-y-8 overflow-y-auto max-h-[60vh] sm:max-h-[70vh] lg:max-h-[90vh]">
             <div className="space-y-4">
               <div className="flex flex-wrap gap-2">
                 {movie.genres ? (
@@ -128,7 +128,7 @@ export default function MovieDetails({ movieId, onClose, onRate, userRating }: M
                   ))
                 )}
               </div>
-              <h2 className="text-4xl lg:text-5xl font-black text-neutral-900 tracking-tighter leading-none">{movie.title}</h2>
+              <h2 className="text-2xl sm:text-4xl lg:text-5xl font-black text-neutral-900 tracking-tighter leading-none">{movie.title}</h2>
               <div className="flex items-center gap-8 text-neutral-500 text-sm font-bold">
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4 text-indigo-400" />
