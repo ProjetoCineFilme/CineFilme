@@ -46,9 +46,9 @@ export default function MovieDetails({ movieId, onClose, onRate, userRating }: M
   if (loading) {
     return (
       <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
-        <div className="bg-white rounded-[3rem] w-full max-w-2xl p-12 text-center">
+        <div className="bg-white dark:bg-[#141414] rounded-[3rem] w-full max-w-2xl p-12 text-center">
           <Loader2 className="w-12 h-12 text-indigo-600 animate-spin mx-auto mb-4" />
-          <p className="text-neutral-900 font-black text-xl">Buscando detalhes reais...</p>
+          <p className="text-neutral-900 dark:text-white font-black text-xl">Buscando detalhes reais...</p>
         </div>
       </div>
     );
@@ -61,7 +61,7 @@ export default function MovieDetails({ movieId, onClose, onRate, userRating }: M
       <motion.div
         initial={{ opacity: 0, scale: 0.9, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        className="bg-white rounded-[2rem] md:rounded-[3rem] w-full max-w-5xl overflow-hidden relative shadow-2xl"
+        className="bg-white dark:bg-[#141414] rounded-[2rem] md:rounded-[3rem] w-full max-w-5xl overflow-hidden relative shadow-2xl"
       >
         <button
           onClick={onClose}
@@ -116,44 +116,44 @@ export default function MovieDetails({ movieId, onClose, onRate, userRating }: M
               <div className="flex flex-wrap gap-2">
                 {movie.genres ? (
                   movie.genres.map(g => (
-                    <span key={g.id} className="text-[10px] font-black text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full uppercase tracking-widest">
+                    <span key={g.id} className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-3 py-1 rounded-full uppercase tracking-widest">
                       {g.name}
                     </span>
                   ))
                 ) : (
                   movie.genre_ids?.map(gid => (
-                    <span key={gid} className="text-[10px] font-black text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full uppercase tracking-widest">
+                    <span key={gid} className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-3 py-1 rounded-full uppercase tracking-widest">
                       {TMDB_GENRES[gid]}
                     </span>
                   ))
                 )}
               </div>
-              <h2 className="text-2xl sm:text-4xl lg:text-5xl font-black text-neutral-900 tracking-tighter leading-none">{movie.title}</h2>
-              <div className="flex items-center gap-8 text-neutral-500 text-sm font-bold">
+              <h2 className="text-2xl sm:text-4xl lg:text-5xl font-black text-neutral-900 dark:text-white tracking-tighter leading-none">{movie.title}</h2>
+              <div className="flex items-center gap-8 text-neutral-500 dark:text-neutral-400 text-sm font-bold">
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4 text-indigo-400" />
                   {movie.release_date ? movie.release_date.split('-')[0] : 'N/A'}
                 </div>
                 <div className="flex items-center gap-2">
                   <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
-                  {movie.vote_average.toFixed(1)} <span className="text-neutral-300 font-medium">/ 10</span>
+                  {movie.vote_average.toFixed(1)} <span className="text-neutral-300 dark:text-neutral-600 font-medium">/ 10</span>
                 </div>
               </div>
             </div>
 
             <div className="space-y-4">
-              <h3 className="text-xs font-black text-neutral-400 uppercase tracking-widest flex items-center gap-2">
+              <h3 className="text-xs font-black text-neutral-400 dark:text-neutral-500 uppercase tracking-widest flex items-center gap-2">
                 <Info className="w-4 h-4" /> Sinopse
               </h3>
-              <p className="text-neutral-600 leading-relaxed font-medium">
+              <p className="text-neutral-600 dark:text-neutral-300 leading-relaxed font-medium">
                 {movie.overview || "Nenhuma descrição disponível em português."}
               </p>
             </div>
 
             {/* Watch Providers */}
             {providers && (
-              <div className="space-y-6 bg-neutral-50 p-8 rounded-[2rem] border border-neutral-100">
-                <h3 className="text-xs font-black text-neutral-400 uppercase tracking-widest flex items-center gap-2">
+              <div className="space-y-6 bg-neutral-50 dark:bg-[#1a1a1a] p-8 rounded-[2rem] border border-neutral-100 dark:border-[#2a2a2a]">
+                <h3 className="text-xs font-black text-neutral-400 dark:text-neutral-500 uppercase tracking-widest flex items-center gap-2">
                   <Globe className="w-4 h-4" /> Onde Assistir
                 </h3>
                 
@@ -162,11 +162,11 @@ export default function MovieDetails({ movieId, onClose, onRate, userRating }: M
                     <>
                       {providers.flatrate && (
                         <div className="space-y-3">
-                          <p className="text-[10px] font-black text-neutral-900 uppercase tracking-widest opacity-40">Streaming</p>
+                          <p className="text-[10px] font-black text-neutral-900 dark:text-white uppercase tracking-widest opacity-40">Streaming</p>
                           <div className="flex flex-wrap gap-3">
                             {providers.flatrate.map(p => (
                               <div key={p.provider_name} className="group relative" title={p.provider_name}>
-                                <div className="w-12 h-12 relative rounded-xl overflow-hidden border-2 border-white shadow-sm group-hover:scale-110 transition-transform">
+                                <div className="w-12 h-12 relative rounded-xl overflow-hidden border-2 border-white dark:border-[#2a2a2a] shadow-sm group-hover:scale-110 transition-transform">
                                   <Image 
                                     src={getTMDBImageUrl(p.logo_path, 'w92') || ""} 
                                     alt={p.provider_name}
@@ -182,13 +182,13 @@ export default function MovieDetails({ movieId, onClose, onRate, userRating }: M
                       
                       {(providers.buy || providers.rent) && (
                         <div className="space-y-3">
-                          <p className="text-[10px] font-black text-neutral-900 uppercase tracking-widest opacity-40">Aluguel / Compra</p>
+                          <p className="text-[10px] font-black text-neutral-900 dark:text-white uppercase tracking-widest opacity-40">Aluguel / Compra</p>
                           <div className="flex flex-wrap gap-3">
                             {[...(providers.buy || []), ...(providers.rent || [])].filter((v, i, a) => a.findIndex(t => t.provider_name === v.provider_name) === i).slice(0, 4).map(p => (
                               <div key={p.provider_name} className="group relative" title={p.provider_name}>
-                                <div className="w-12 h-12 relative rounded-xl overflow-hidden border-2 border-white shadow-sm group-hover:scale-110 transition-transform">
-                                  <Image 
-                                    src={getTMDBImageUrl(p.logo_path, 'w92') || ""} 
+                                <div className="w-12 h-12 relative rounded-xl overflow-hidden border-2 border-white dark:border-[#2a2a2a] shadow-sm group-hover:scale-110 transition-transform">
+                                  <Image
+                                    src={getTMDBImageUrl(p.logo_path, 'w92') || ""}
                                     alt={p.provider_name}
                                     fill
                                     className="object-cover opacity-80 group-hover:opacity-100"
@@ -201,7 +201,7 @@ export default function MovieDetails({ movieId, onClose, onRate, userRating }: M
                       )}
                     </>
                   ) : (
-                    <p className="text-neutral-400 text-xs italic">Informações indisponíveis no momento.</p>
+                    <p className="text-neutral-400 dark:text-neutral-500 text-xs italic">Informações indisponíveis no momento.</p>
                   )}
                 </div>
                 
@@ -219,13 +219,13 @@ export default function MovieDetails({ movieId, onClose, onRate, userRating }: M
             {/* Cast */}
             {movie.credits?.cast && movie.credits.cast.length > 0 && (
               <div className="space-y-4">
-                <h3 className="text-xs font-black text-neutral-400 uppercase tracking-widest flex items-center gap-2">
+                <h3 className="text-xs font-black text-neutral-400 dark:text-neutral-500 uppercase tracking-widest flex items-center gap-2">
                   <Users className="w-4 h-4" /> Elenco
                 </h3>
                 <div className="flex gap-4 overflow-x-auto pb-2">
                   {movie.credits.cast.slice(0, 8).map(actor => (
                     <div key={actor.id} className="flex-shrink-0 text-center w-16">
-                      <div className="w-14 h-14 rounded-full overflow-hidden bg-neutral-100 mx-auto mb-2 border-2 border-neutral-100">
+                      <div className="w-14 h-14 rounded-full overflow-hidden bg-neutral-100 dark:bg-[#2a2a2a] mx-auto mb-2 border-2 border-neutral-100 dark:border-[#2a2a2a]">
                         {actor.profile_path ? (
                           <Image
                             src={getTMDBImageUrl(actor.profile_path, 'w185') || ''}
@@ -237,12 +237,12 @@ export default function MovieDetails({ movieId, onClose, onRate, userRating }: M
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
-                            <Users className="w-6 h-6 text-neutral-300" />
+                            <Users className="w-6 h-6 text-neutral-300 dark:text-neutral-600" />
                           </div>
                         )}
                       </div>
-                      <p className="text-[9px] font-black text-neutral-700 leading-tight line-clamp-2">{actor.name}</p>
-                      <p className="text-[8px] text-neutral-400 italic leading-tight line-clamp-1 mt-0.5">{actor.character}</p>
+                      <p className="text-[9px] font-black text-neutral-700 dark:text-neutral-200 leading-tight line-clamp-2">{actor.name}</p>
+                      <p className="text-[8px] text-neutral-400 dark:text-neutral-500 italic leading-tight line-clamp-1 mt-0.5">{actor.character}</p>
                     </div>
                   ))}
                 </div>
@@ -250,11 +250,11 @@ export default function MovieDetails({ movieId, onClose, onRate, userRating }: M
             )}
 
             {/* User Rating */}
-            <div className="pt-8 border-t border-neutral-100">
+            <div className="pt-8 border-t border-neutral-100 dark:border-[#2a2a2a]">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div>
-                  <h3 className="text-lg font-black text-neutral-900 tracking-tight">Sua Avaliação</h3>
-                  <p className="text-neutral-400 text-xs font-medium">
+                  <h3 className="text-lg font-black text-neutral-900 dark:text-white tracking-tight">Sua Avaliação</h3>
+                  <p className="text-neutral-400 dark:text-neutral-500 text-xs font-medium">
                     {userRating ? `Sua nota atual: ${userRating} ★` : 'Como você avalia este filme?'}
                   </p>
                 </div>

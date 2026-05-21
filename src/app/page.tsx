@@ -51,14 +51,14 @@ export default function CineFilmeApp() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
+      <div className="min-h-screen bg-neutral-50 dark:bg-[#0a0a0a] flex items-center justify-center">
         <Loader2 className="w-10 h-10 text-indigo-600 animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50 font-sans selection:bg-indigo-100">
+    <div className="min-h-screen bg-neutral-50 dark:bg-[#0a0a0a] font-sans selection:bg-indigo-100">
       <AnimatePresence mode="wait">
         {!user ? (
           <motion.div 
@@ -66,7 +66,7 @@ export default function CineFilmeApp() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="min-h-screen flex flex-col items-center justify-center p-6 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"
+            className="min-h-screen flex flex-col items-center justify-center p-6 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] dark:bg-[#0a0a0a]"
           >
             <div className="text-center mb-12 max-w-sm">
               <motion.div 
@@ -76,8 +76,8 @@ export default function CineFilmeApp() {
               >
                 <Film className="w-10 h-10 text-white" />
               </motion.div>
-              <h1 className="text-5xl font-black text-neutral-900 tracking-tighter mb-4">CineFilme</h1>
-              <p className="text-neutral-500 text-lg leading-snug font-medium">
+              <h1 className="text-5xl font-black text-neutral-900 dark:text-white tracking-tighter mb-4">CineFilme</h1>
+              <p className="text-neutral-500 dark:text-neutral-400 text-lg leading-snug font-medium">
                 Descubra seu próximo favorito através de conexões inteligentes.
               </p>
             </div>
@@ -89,7 +89,7 @@ export default function CineFilmeApp() {
             key="onboarding"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="min-h-screen flex items-center justify-center p-6"
+            className="min-h-screen flex items-center justify-center p-6 dark:bg-[#0a0a0a]"
           >
             <RatingFlow onComplete={handleComplete} />
           </motion.div>
@@ -98,7 +98,7 @@ export default function CineFilmeApp() {
             key="dashboard"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="min-h-screen"
+            className="min-h-screen dark:bg-[#0a0a0a]"
           >
             <Dashboard user={user} profile={profile} />
           </motion.div>

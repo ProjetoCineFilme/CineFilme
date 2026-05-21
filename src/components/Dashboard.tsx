@@ -27,6 +27,7 @@ import Image from 'next/image';
 
 import MovieDetails from './MovieDetails';
 import StarRating from './StarRating';
+import ThemeToggle from './ThemeToggle';
 
 interface Movie {
   movie_id: number;
@@ -225,18 +226,18 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
   };
 
   return (
-    <div className="max-w-7xl mx-auto p-3 md:p-12 font-sans bg-neutral-50 min-h-screen">
+    <div className="max-w-7xl mx-auto p-3 md:p-12 font-sans bg-neutral-50 dark:bg-[#0a0a0a] min-h-screen">
       {/* Header */}
-      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 md:mb-12 bg-white p-5 md:p-8 rounded-[1.5rem] md:rounded-[2.5rem] shadow-sm border border-neutral-100">
+      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 md:mb-12 bg-white dark:bg-[#141414] p-5 md:p-8 rounded-[1.5rem] md:rounded-[2.5rem] shadow-sm border border-neutral-100 dark:border-[#2a2a2a]">
         <div className="flex items-center gap-4">
           <div className="bg-indigo-600 p-3 md:p-4 rounded-[1rem] md:rounded-[1.5rem] shadow-xl shadow-indigo-100 flex-shrink-0">
             <Film className="w-6 h-6 md:w-8 md:h-8 text-white" />
           </div>
           <div>
-            <h1 className="text-2xl md:text-4xl font-black text-neutral-900 tracking-tighter">CineFilme <span className="text-indigo-200">AI</span></h1>
-            <p className="text-neutral-400 text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2 mt-1">
+            <h1 className="text-2xl md:text-4xl font-black text-neutral-900 dark:text-white tracking-tighter">CineFilme <span className="text-indigo-200">AI</span></h1>
+            <p className="text-neutral-400 dark:text-neutral-500 text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2 mt-1">
               <UserIcon className="w-3 h-3 text-indigo-400" />
-              <span className="bg-neutral-50 px-3 py-1 rounded-full border border-neutral-100 truncate max-w-[140px] sm:max-w-none">{profile.name || 'Membro'}</span>
+              <span className="bg-neutral-50 dark:bg-[#1a1a1a] px-3 py-1 rounded-full border border-neutral-100 dark:border-[#2a2a2a] truncate max-w-[140px] sm:max-w-none">{profile.name || 'Membro'}</span>
             </p>
           </div>
         </div>
@@ -251,9 +252,10 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
             <span className="relative z-10 hidden xs:inline sm:hidden md:inline">Ver Recomendações</span>
             <span className="relative z-10 xs:hidden sm:inline md:hidden">Recomen.</span>
           </Link>
+          <ThemeToggle />
           <button
             onClick={() => auth.signOut()}
-            className="bg-white border border-neutral-200 p-3 md:p-4 rounded-2xl hover:bg-red-50 hover:border-red-100 hover:text-red-500 transition-all active:scale-95 shadow-sm flex-shrink-0"
+            className="bg-white dark:bg-[#1a1a1a] border border-neutral-200 dark:border-[#2a2a2a] p-3 md:p-4 rounded-2xl hover:bg-red-50 dark:hover:bg-red-900/20 hover:border-red-100 dark:hover:border-red-800 hover:text-red-500 dark:text-neutral-300 transition-all active:scale-95 shadow-sm flex-shrink-0"
             title="Sair"
           >
             <LogOut className="w-5 h-5 md:w-6 md:h-6" />
@@ -267,8 +269,8 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
           onClick={() => setActiveTab('explore')}
           className={`flex-1 sm:flex-none px-4 md:px-6 py-3 rounded-2xl font-black text-sm transition-all ${
             activeTab === 'explore'
-              ? 'bg-neutral-900 text-white shadow-lg'
-              : 'bg-white text-neutral-400 border border-neutral-100 hover:border-neutral-200'
+              ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 shadow-lg'
+              : 'bg-white dark:bg-[#141414] text-neutral-400 dark:text-neutral-500 border border-neutral-100 dark:border-[#2a2a2a] hover:border-neutral-200 dark:hover:border-[#3a3a3a]'
           }`}
         >
           Explorar
@@ -277,15 +279,15 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
           onClick={() => setActiveTab('my-movies')}
           className={`flex-1 sm:flex-none px-4 md:px-6 py-3 rounded-2xl font-black text-sm transition-all flex items-center justify-center gap-2 ${
             activeTab === 'my-movies'
-              ? 'bg-neutral-900 text-white shadow-lg'
-              : 'bg-white text-neutral-400 border border-neutral-100 hover:border-neutral-200'
+              ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 shadow-lg'
+              : 'bg-white dark:bg-[#141414] text-neutral-400 dark:text-neutral-500 border border-neutral-100 dark:border-[#2a2a2a] hover:border-neutral-200 dark:hover:border-[#3a3a3a]'
           }`}
         >
           <History className="w-4 h-4" />
           Meus Filmes
           {myRatings.length > 0 && (
             <span className={`text-xs px-2 py-0.5 rounded-full font-black ${
-              activeTab === 'my-movies' ? 'bg-white/20 text-white' : 'bg-indigo-50 text-indigo-600'
+              activeTab === 'my-movies' ? 'bg-white/20 text-white dark:bg-neutral-900/20 dark:text-neutral-900' : 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400'
             }`}>
               {myRatings.length}
             </span>
@@ -297,9 +299,9 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
       {activeTab === 'my-movies' && (
         <div>
           {myRatings.length === 0 ? (
-            <div className="py-24 text-center bg-white rounded-[3rem] border border-neutral-100">
-              <Film className="w-12 h-12 text-neutral-200 mx-auto mb-4" />
-              <p className="text-neutral-400 font-black text-sm">Você ainda não avaliou nenhum filme.</p>
+            <div className="py-24 text-center bg-white dark:bg-[#141414] rounded-[3rem] border border-neutral-100 dark:border-[#2a2a2a]">
+              <Film className="w-12 h-12 text-neutral-200 dark:text-neutral-700 mx-auto mb-4" />
+              <p className="text-neutral-400 dark:text-neutral-500 font-black text-sm">Você ainda não avaliou nenhum filme.</p>
               <button
                 onClick={() => setActiveTab('explore')}
                 className="mt-6 px-6 py-3 bg-indigo-600 text-white rounded-2xl font-black text-sm hover:bg-indigo-700 transition-all"
@@ -314,10 +316,10 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
                 return (
                   <div
                     key={rating.movie_id}
-                    className="bg-white rounded-3xl overflow-hidden border border-neutral-100 shadow-sm hover:shadow-xl hover:shadow-neutral-200/80 transition-all group"
+                    className="bg-white dark:bg-[#1a1a1a] rounded-3xl overflow-hidden border border-neutral-100 dark:border-[#2a2a2a] shadow-sm hover:shadow-xl hover:shadow-neutral-200/80 dark:hover:shadow-black/50 transition-all group"
                   >
                     <div
-                      className="relative aspect-[2/3] bg-neutral-100 cursor-pointer"
+                      className="relative aspect-[2/3] bg-neutral-100 dark:bg-[#2a2a2a] cursor-pointer"
                       onClick={() => setSelectedMovieId(rating.movie_id)}
                     >
                       {movie?.poster_path ? (
@@ -334,13 +336,13 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
                     </div>
                     <div className="p-3 space-y-2">
                       <h4
-                        className="font-black text-neutral-800 text-xs leading-tight line-clamp-2 cursor-pointer hover:text-indigo-600 transition-colors"
+                        className="font-black text-neutral-800 dark:text-neutral-200 text-xs leading-tight line-clamp-2 cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
                         onClick={() => setSelectedMovieId(rating.movie_id)}
                       >
                         {movie?.title || `Filme #${rating.movie_id}`}
                       </h4>
                       {movie?.genre && (
-                        <span className="text-[9px] font-black text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded uppercase tracking-tighter inline-block">
+                        <span className="text-[9px] font-black text-indigo-500 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded uppercase tracking-tighter inline-block">
                           {movie.genre}
                         </span>
                       )}
@@ -350,7 +352,7 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
                           onChange={(r) => handleUpdateRating(rating.movie_id, r)}
                           size="sm"
                         />
-                        <p className="text-[9px] text-neutral-400 mt-1 font-medium">
+                        <p className="text-[9px] text-neutral-400 dark:text-neutral-500 mt-1 font-medium">
                           Nota: {rating.rating} ★
                         </p>
                       </div>
@@ -371,13 +373,13 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
         <div className="lg:col-span-8 space-y-8">
           
           {/* Search Box */}
-          <section className="bg-white rounded-[1.5rem] md:rounded-[3rem] p-5 md:p-10 shadow-sm border border-neutral-100 ring-1 ring-neutral-50">
+          <section className="bg-white dark:bg-[#141414] rounded-[1.5rem] md:rounded-[3rem] p-5 md:p-10 shadow-sm border border-neutral-100 dark:border-[#2a2a2a] ring-1 ring-neutral-50 dark:ring-[#2a2a2a]">
             <div className="flex items-center justify-between mb-5 md:mb-8">
               <div>
-                <h2 className="text-lg md:text-2xl font-black text-neutral-900 tracking-tight flex items-center gap-2 md:gap-3">
+                <h2 className="text-lg md:text-2xl font-black text-neutral-900 dark:text-white tracking-tight flex items-center gap-2 md:gap-3">
                   <Search className="w-5 h-5 md:w-6 md:h-6 text-indigo-600" /> O que quer assistir?
                 </h2>
-                <p className="text-neutral-400 text-xs md:text-sm mt-1">Pesquise em milhões de filmes via TMDB.</p>
+                <p className="text-neutral-400 dark:text-neutral-500 text-xs md:text-sm mt-1">Pesquise em milhões de filmes via TMDB.</p>
               </div>
             </div>
 
@@ -388,7 +390,7 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
                 value={searchTerm}
                 disabled={isApiKeyMissing}
                 onChange={(e) => handleSearch(e.target.value)}
-                className={`w-full px-4 py-4 pl-12 md:px-8 md:py-6 md:pl-16 rounded-2xl md:rounded-[2rem] border-2 border-neutral-50 bg-neutral-50/50 focus:bg-white focus:ring-4 md:focus:ring-8 focus:ring-indigo-500/5 focus:border-indigo-500 transition-all outline-none text-base md:text-xl font-medium placeholder:text-neutral-300 ${isApiKeyMissing ? 'cursor-not-allowed opacity-50' : ''}`}
+                className={`w-full px-4 py-4 pl-12 md:px-8 md:py-6 md:pl-16 rounded-2xl md:rounded-[2rem] border-2 border-neutral-50 dark:border-[#2a2a2a] bg-neutral-50/50 dark:bg-[#1c1c1c] focus:bg-white dark:focus:bg-[#222] focus:ring-4 md:focus:ring-8 focus:ring-indigo-500/5 focus:border-indigo-500 transition-all outline-none text-base md:text-xl font-medium placeholder:text-neutral-300 dark:placeholder-neutral-500 dark:text-white ${isApiKeyMissing ? 'cursor-not-allowed opacity-50' : ''}`}
               />
               <Search className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 w-5 h-5 md:w-6 md:h-6 text-neutral-300 group-focus-within:text-indigo-400 transition-colors" />
               {loading && <Loader2 className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 w-5 h-5 md:w-6 md:h-6 text-indigo-600 animate-spin" />}
@@ -420,9 +422,9 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
                       <div 
                         key={movie.id} 
                         onClick={() => setSelectedMovieId(movie.id)}
-                        className="flex gap-4 p-4 rounded-3xl border border-neutral-100 bg-white hover:border-indigo-200 hover:shadow-xl hover:shadow-indigo-500/5 transition-all group cursor-pointer"
+                        className="flex gap-4 p-4 rounded-3xl border border-neutral-100 dark:border-[#2a2a2a] bg-white dark:bg-[#1a1a1a] hover:border-indigo-200 dark:hover:border-indigo-800 hover:shadow-xl hover:shadow-indigo-500/5 dark:hover:shadow-indigo-950/30 transition-all group cursor-pointer"
                       >
-                        <div className="w-24 h-36 bg-neutral-100 rounded-2xl overflow-hidden flex-shrink-0 shadow-sm relative">
+                        <div className="w-24 h-36 bg-neutral-100 dark:bg-[#2a2a2a] rounded-2xl overflow-hidden flex-shrink-0 shadow-sm relative">
                           {poster ? (
                             <Image 
                               src={poster} 
@@ -437,10 +439,10 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
                         </div>
                         <div className="flex-1 flex flex-col justify-between py-1">
                           <div>
-                            <h4 className="font-black text-neutral-800 text-sm line-clamp-2 leading-tight mb-1">{movie.title}</h4>
+                            <h4 className="font-black text-neutral-800 dark:text-neutral-200 text-sm line-clamp-2 leading-tight mb-1">{movie.title}</h4>
                             <div className="flex flex-wrap gap-1 mb-2">
                               {movie.genre_ids.slice(0, 2).map(gid => (
-                                <span key={gid} className="text-[9px] font-black text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded-md uppercase tracking-tighter">
+                                <span key={gid} className="text-[9px] font-black text-indigo-500 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded-md uppercase tracking-tighter">
                                   {TMDB_GENRES[gid]}
                                 </span>
                               ))}
@@ -453,7 +455,7 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
                               onChange={(r) => handleRateMovie(movie, r)}
                               size="sm"
                             />
-                            <p className="text-[10px] text-neutral-400 font-bold italic">
+                            <p className="text-[10px] text-neutral-400 dark:text-neutral-500 font-bold italic">
                               {myRating ? `Sua nota: ${myRating} ★` : 'Toque para avaliar'}
                             </p>
                           </div>
@@ -469,10 +471,10 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
           {/* Trending Section */}
           <section className="space-y-6">
             <div className="flex items-center justify-between px-4">
-              <h3 className="text-xl font-black text-neutral-900 tracking-tight flex items-center gap-3">
+              <h3 className="text-xl font-black text-neutral-900 dark:text-white tracking-tight flex items-center gap-3">
                 <TrendingUp className="w-5 h-5 text-red-500" /> Bombando no Mundo
               </h3>
-              <p className="text-[10px] font-black text-neutral-400 uppercase tracking-widest">Atualizado Agora</p>
+              <p className="text-[10px] font-black text-neutral-400 dark:text-neutral-500 uppercase tracking-widest">Atualizado Agora</p>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {popularMovies.slice(0, 4).map(movie => (
@@ -542,9 +544,9 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
           </section>
 
           {/* Recent Activity */}
-          <section className="bg-white rounded-[3rem] p-8 shadow-sm border border-neutral-100">
+          <section className="bg-white dark:bg-[#141414] rounded-[3rem] p-8 shadow-sm border border-neutral-100 dark:border-[#2a2a2a]">
             <div className="flex items-center justify-between mb-8">
-              <h3 className="text-xs font-black text-neutral-900 uppercase tracking-widest flex items-center gap-3">
+              <h3 className="text-xs font-black text-neutral-900 dark:text-white uppercase tracking-widest flex items-center gap-3">
                 <History className="w-4 h-4 text-indigo-600" /> Histórico Real
               </h3>
               {myRatings.length > 0 && (
@@ -567,7 +569,7 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
                     onClick={() => setSelectedMovieId(rating.movie_id)}
                     className="flex items-center gap-5 group cursor-pointer"
                   >
-                    <div className="w-12 h-18 bg-neutral-50 rounded-xl overflow-hidden flex-shrink-0 border border-neutral-100 relative">
+                    <div className="w-12 h-18 bg-neutral-50 dark:bg-[#1a1a1a] rounded-xl overflow-hidden flex-shrink-0 border border-neutral-100 dark:border-[#2a2a2a] relative">
                       {movie?.poster_path ? (
                         <Image 
                           src={getTMDBImageUrl(movie.poster_path)} 
@@ -579,13 +581,13 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
                       ) : <Film className="w-4 h-4 text-neutral-200 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-black text-neutral-800 truncate leading-tight group-hover:text-indigo-600 transition-colors">{movie?.title || 'Carregando...'}</p>
+                      <p className="text-sm font-black text-neutral-800 dark:text-neutral-200 truncate leading-tight group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{movie?.title || 'Carregando...'}</p>
                       <div className="flex items-center gap-3 mt-1">
                         <div className="flex items-center gap-1">
                           <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
-                          <span className="text-xs font-black text-neutral-500">{rating.rating}</span>
+                          <span className="text-xs font-black text-neutral-500 dark:text-neutral-400">{rating.rating}</span>
                         </div>
-                        <span className="text-[10px] font-black text-indigo-400 uppercase tracking-tighter bg-indigo-50 px-2 py-0.5 rounded flex-shrink-0">
+                        <span className="text-[10px] font-black text-indigo-400 dark:text-indigo-400 uppercase tracking-tighter bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded flex-shrink-0">
                           {movie?.genre || 'Geral'}
                         </span>
                       </div>
@@ -594,9 +596,9 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
                 );
               })}
               {myRatings.length === 0 && (
-                <div className="py-12 text-center bg-neutral-50 rounded-[2rem] border-2 border-dashed border-neutral-200">
-                  <Film className="w-8 h-8 text-neutral-200 mx-auto mb-3" />
-                  <p className="text-neutral-400 text-xs font-bold italic px-8 leading-snug">Seu histórico está vazio. Comece a avaliar!</p>
+                <div className="py-12 text-center bg-neutral-50 dark:bg-[#1a1a1a] rounded-[2rem] border-2 border-dashed border-neutral-200 dark:border-[#2a2a2a]">
+                  <Film className="w-8 h-8 text-neutral-200 dark:text-neutral-700 mx-auto mb-3" />
+                  <p className="text-neutral-400 dark:text-neutral-500 text-xs font-bold italic px-8 leading-snug">Seu histórico está vazio. Comece a avaliar!</p>
                 </div>
               )}
             </div>

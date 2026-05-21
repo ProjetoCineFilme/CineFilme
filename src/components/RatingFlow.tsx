@@ -237,15 +237,15 @@ export default function RatingFlow({ onComplete }: { onComplete: (userId: any) =
 
   if (checkingProfile) {
     return (
-      <div className="w-full max-w-lg mx-auto bg-white rounded-3xl shadow-xl p-12 border border-neutral-100 min-h-[400px] flex flex-col items-center justify-center">
+      <div className="w-full max-w-lg mx-auto bg-white dark:bg-[#141414] rounded-3xl shadow-xl p-12 border border-neutral-100 dark:border-[#2a2a2a] min-h-[400px] flex flex-col items-center justify-center">
         <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
-        <p className="text-neutral-400 text-sm mt-4 font-medium uppercase tracking-widest">Carregando perfil...</p>
+        <p className="text-neutral-400 dark:text-neutral-500 text-sm mt-4 font-medium uppercase tracking-widest">Carregando perfil...</p>
       </div>
     );
   }
 
   return (
-    <div className="w-full max-w-lg mx-auto bg-white rounded-3xl shadow-xl border border-neutral-100 flex flex-col overflow-hidden" style={{ maxHeight: 'calc(100vh - 2rem)' }}>
+    <div className="w-full max-w-lg mx-auto bg-white dark:bg-[#141414] rounded-3xl shadow-xl border border-neutral-100 dark:border-[#2a2a2a] flex flex-col overflow-hidden" style={{ maxHeight: 'calc(100vh - 2rem)' }}>
       <AnimatePresence mode="wait">
 
         {/* ── Login / Signup ── */}
@@ -258,13 +258,13 @@ export default function RatingFlow({ onComplete }: { onComplete: (userId: any) =
             className="flex-1 flex flex-col p-8"
           >
             <div className="text-center mb-8">
-              <div className="bg-indigo-50 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <div className="bg-indigo-50 dark:bg-indigo-900/30 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4">
                 {step === 'login' ? <LogIn className="w-8 h-8 text-indigo-600" /> : <UserPlus className="w-8 h-8 text-indigo-600" />}
               </div>
-              <h2 className="text-2xl font-black text-neutral-900 tracking-tight">
+              <h2 className="text-2xl font-black text-neutral-900 dark:text-white tracking-tight">
                 {step === 'login' ? 'Bem-vindo de volta' : 'Criar nova conta'}
               </h2>
-              <p className="text-neutral-500 text-xs mt-1 uppercase font-bold tracking-widest">
+              <p className="text-neutral-500 dark:text-neutral-400 text-xs mt-1 uppercase font-bold tracking-widest">
                 {step === 'login' ? 'Entre para ver suas recomendações' : 'Cadastre-se para começar'}
               </p>
             </div>
@@ -279,19 +279,19 @@ export default function RatingFlow({ onComplete }: { onComplete: (userId: any) =
                     placeholder="Seu nome"
                     value={name}
                     onChange={e => setName(e.target.value)}
-                    className="w-full pl-12 pr-4 py-3 rounded-xl border border-neutral-100 bg-neutral-50 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none"
+                    className="w-full pl-12 pr-4 py-3 rounded-xl border border-neutral-100 dark:border-[#2a2a2a] bg-neutral-50 dark:bg-[#1c1c1c] focus:bg-white dark:focus:bg-[#222] focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none dark:text-white dark:placeholder-neutral-500"
                   />
                 </div>
               )}
               <div className="relative">
                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
                 <input type="email" placeholder="Seu e-mail" value={email} onChange={e => setEmail(e.target.value)}
-                  className="w-full pl-12 pr-4 py-3 rounded-xl border border-neutral-100 bg-neutral-50 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none" />
+                  className="w-full pl-12 pr-4 py-3 rounded-xl border border-neutral-100 dark:border-[#2a2a2a] bg-neutral-50 dark:bg-[#1c1c1c] focus:bg-white dark:focus:bg-[#222] focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none dark:text-white dark:placeholder-neutral-500" />
               </div>
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
                 <input type="password" placeholder="Sua senha" value={password} onChange={e => setPassword(e.target.value)}
-                  className="w-full pl-12 pr-4 py-3 rounded-xl border border-neutral-100 bg-neutral-50 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none" />
+                  className="w-full pl-12 pr-4 py-3 rounded-xl border border-neutral-100 dark:border-[#2a2a2a] bg-neutral-50 dark:bg-[#1c1c1c] focus:bg-white dark:focus:bg-[#222] focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none dark:text-white dark:placeholder-neutral-500" />
               </div>
 
               {authError && <p className="text-red-500 text-xs font-bold text-center bg-red-50 py-2 rounded-lg">{authError}</p>}
@@ -302,17 +302,17 @@ export default function RatingFlow({ onComplete }: { onComplete: (userId: any) =
               </button>
 
               <div className="relative py-3 flex items-center justify-center">
-                <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-neutral-100" /></div>
-                <span className="relative px-4 bg-white text-[10px] font-bold text-neutral-300 uppercase tracking-widest">ou use</span>
+                <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-neutral-100 dark:border-[#2a2a2a]" /></div>
+                <span className="relative px-4 bg-white dark:bg-[#141414] text-[10px] font-bold text-neutral-300 dark:text-neutral-600 uppercase tracking-widest">ou use</span>
               </div>
 
               <button onClick={handleGoogleLogin}
-                className="w-full bg-white border border-neutral-200 hover:bg-neutral-50 text-neutral-700 font-bold py-3 rounded-xl flex items-center justify-center gap-3 transition-all">
+                className="w-full bg-white dark:bg-[#1a1a1a] border border-neutral-200 dark:border-[#2a2a2a] hover:bg-neutral-50 dark:hover:bg-[#222] text-neutral-700 dark:text-neutral-200 font-bold py-3 rounded-xl flex items-center justify-center gap-3 transition-all">
                 <img src="https://www.google.com/favicon.ico" className="w-4 h-4" alt="Google" />
                 Google
               </button>
 
-              <p className="text-center text-xs text-neutral-400 font-medium">
+              <p className="text-center text-xs text-neutral-400 dark:text-neutral-500 font-medium">
                 {step === 'login' ? 'Não tem conta?' : 'Já tem conta?'}
                 <button onClick={() => setStep(step === 'login' ? 'signup' : 'login')} className="text-indigo-600 font-bold ml-1 hover:underline">
                   {step === 'login' ? 'Cadastre-se' : 'Faça login'}
@@ -333,16 +333,16 @@ export default function RatingFlow({ onComplete }: { onComplete: (userId: any) =
             style={{ maxHeight: 'calc(100vh - 2rem)' }}
           >
             {/* Header fixo */}
-            <div className="p-6 pb-4 border-b border-neutral-50 flex-shrink-0">
-              <h2 className="text-xl font-black text-neutral-900 tracking-tight">O que você já assistiu?</h2>
-              <p className="text-neutral-500 text-xs mt-1 leading-relaxed">
+            <div className="p-6 pb-4 border-b border-neutral-50 dark:border-[#2a2a2a] flex-shrink-0">
+              <h2 className="text-xl font-black text-neutral-900 dark:text-white tracking-tight">O que você já assistiu?</h2>
+              <p className="text-neutral-500 dark:text-neutral-400 text-xs mt-1 leading-relaxed">
                 Avalie os filmes que você conhece — isso nos ajuda a entender seu gosto e recomendar melhor.
               </p>
               <div className="flex items-center gap-3 mt-3">
-                <div className="flex-1 bg-neutral-100 rounded-full h-2">
+                <div className="flex-1 bg-neutral-100 dark:bg-[#2a2a2a] rounded-full h-2">
                   <div className="bg-indigo-500 h-2 rounded-full transition-all duration-300" style={{ width: `${Math.min((ratedCount / 10) * 100, 100)}%` }} />
                 </div>
-                <span className="text-xs font-black text-indigo-600 tabular-nums">{ratedCount} avaliados</span>
+                <span className="text-xs font-black text-indigo-600 dark:text-indigo-400 tabular-nums">{ratedCount} avaliados</span>
               </div>
             </div>
 
@@ -358,8 +358,8 @@ export default function RatingFlow({ onComplete }: { onComplete: (userId: any) =
                   {sections.map(section => (
                     <div key={section.genreId}>
                       <div className="px-6 mb-3 flex items-center gap-2">
-                        <span className="text-xs font-black text-neutral-900 uppercase tracking-widest">{section.genre}</span>
-                        <span className="text-[9px] font-black text-neutral-300 uppercase tracking-widest">
+                        <span className="text-xs font-black text-neutral-900 dark:text-white uppercase tracking-widest">{section.genre}</span>
+                        <span className="text-[9px] font-black text-neutral-300 dark:text-neutral-600 uppercase tracking-widest">
                           ({section.movies.filter(m => ratings[m.id]).length}/{section.movies.length} avaliados)
                         </span>
                       </div>
@@ -374,7 +374,7 @@ export default function RatingFlow({ onComplete }: { onComplete: (userId: any) =
                               className="flex-shrink-0 w-28"
                               style={{ scrollSnapAlign: 'start' }}
                             >
-                              <div className={`relative aspect-[2/3] rounded-xl overflow-hidden bg-neutral-100 mb-2 border-2 transition-all ${myRating > 0 ? 'border-indigo-400 shadow-md shadow-indigo-100' : 'border-transparent'}`}>
+                              <div className={`relative aspect-[2/3] rounded-xl overflow-hidden bg-neutral-100 dark:bg-[#2a2a2a] mb-2 border-2 transition-all ${myRating > 0 ? 'border-indigo-400 shadow-md shadow-indigo-100' : 'border-transparent'}`}>
                                 {poster ? (
                                   <Image src={poster} alt={movie.title} fill className="object-cover" referrerPolicy="no-referrer" />
                                 ) : (
@@ -386,7 +386,7 @@ export default function RatingFlow({ onComplete }: { onComplete: (userId: any) =
                                   </div>
                                 )}
                               </div>
-                              <p className="text-[10px] font-bold text-neutral-700 line-clamp-2 leading-tight mb-1.5">{movie.title}</p>
+                              <p className="text-[10px] font-bold text-neutral-700 dark:text-neutral-200 line-clamp-2 leading-tight mb-1.5">{movie.title}</p>
                               <StarRating value={myRating} onChange={r => handleRate(movie.id, r)} size="sm" />
                             </div>
                           );
@@ -399,7 +399,7 @@ export default function RatingFlow({ onComplete }: { onComplete: (userId: any) =
             </div>
 
             {/* Footer fixo com botão */}
-            <div className="p-6 pt-4 border-t border-neutral-50 flex-shrink-0">
+            <div className="p-6 pt-4 border-t border-neutral-50 dark:border-[#2a2a2a] flex-shrink-0">
               {submitError && <p className="text-red-500 text-[10px] font-bold text-center bg-red-50 py-2 rounded-lg mb-3">{submitError}</p>}
               <button
                 disabled={ratedCount < 2 || loading}
@@ -409,7 +409,7 @@ export default function RatingFlow({ onComplete }: { onComplete: (userId: any) =
                 {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : `Finalizar Perfil (${ratedCount} avaliados)`}
                 {!loading && <ChevronRight className="w-4 h-4" />}
               </button>
-              <p className="text-[10px] text-neutral-400 mt-2 text-center font-medium">Avalie pelo menos 2 filmes para continuar</p>
+              <p className="text-[10px] text-neutral-400 dark:text-neutral-500 mt-2 text-center font-medium">Avalie pelo menos 2 filmes para continuar</p>
             </div>
           </motion.div>
         )}
@@ -422,20 +422,20 @@ export default function RatingFlow({ onComplete }: { onComplete: (userId: any) =
             animate={{ opacity: 1, scale: 1 }}
             className="flex-1 flex flex-col items-center justify-center text-center p-8"
           >
-            <div className="bg-green-50 w-20 h-20 rounded-full flex items-center justify-center mb-6 border border-green-100">
+            <div className="bg-green-50 dark:bg-green-900/20 w-20 h-20 rounded-full flex items-center justify-center mb-6 border border-green-100 dark:border-green-800">
               <CheckCircle2 className="w-10 h-10 text-green-500" />
             </div>
-            <h2 className="text-3xl font-black text-neutral-900 tracking-tight">Cadastro Concluído!</h2>
-            <p className="text-neutral-500 text-xs mt-2 uppercase font-bold tracking-[0.2em]">Sua conta está ativa</p>
+            <h2 className="text-3xl font-black text-neutral-900 dark:text-white tracking-tight">Cadastro Concluído!</h2>
+            <p className="text-neutral-500 dark:text-neutral-400 text-xs mt-2 uppercase font-bold tracking-[0.2em]">Sua conta está ativa</p>
 
-            <div className="bg-neutral-50 p-8 rounded-3xl border border-neutral-100 w-full my-8 relative overflow-hidden">
+            <div className="bg-neutral-50 dark:bg-[#1a1a1a] p-8 rounded-3xl border border-neutral-100 dark:border-[#2a2a2a] w-full my-8 relative overflow-hidden">
               <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 rounded-full -mr-12 -mt-12" />
-              <span className="text-[10px] text-neutral-400 uppercase font-black tracking-[0.3em]">ID de Usuário</span>
-              <p className="text-5xl font-black text-indigo-600 mt-2 tracking-tighter">{assignedId}</p>
+              <span className="text-[10px] text-neutral-400 dark:text-neutral-500 uppercase font-black tracking-[0.3em]">ID de Usuário</span>
+              <p className="text-5xl font-black text-indigo-600 dark:text-indigo-400 mt-2 tracking-tighter">{assignedId}</p>
             </div>
 
             <button onClick={() => onComplete(assignedId || 0)}
-              className="w-full bg-neutral-900 hover:bg-black text-white font-bold py-4 rounded-2xl transition-all flex items-center justify-center gap-2 shadow-xl shadow-neutral-200">
+              className="w-full bg-neutral-900 dark:bg-white hover:bg-black dark:hover:bg-neutral-100 text-white dark:text-neutral-900 font-bold py-4 rounded-2xl transition-all flex items-center justify-center gap-2 shadow-xl shadow-neutral-200 dark:shadow-neutral-900">
               Ir para o Painel <ArrowRight className="w-4 h-4" />
             </button>
           </motion.div>
