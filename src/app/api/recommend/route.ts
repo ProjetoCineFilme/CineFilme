@@ -64,16 +64,6 @@ export async function POST(request: Request) {
       }
     }
 
-    console.log('[RECOMMEND DEBUG]', JSON.stringify({
-      receivedUserId: user_id,
-      realTargetId,
-      totalUsersInGraph: allUsers.length,
-      allUserIds: allUsers,
-      targetUserRatingsCount: userRatings.length,
-      targetMovieIds: userRatings.map(r => ({ id: r.toId, weight: r.weight, genres: grafo.getMovieGenres(r.toId) })),
-      favoriteGenres: Array.from(favoriteGenres),
-    }, null, 2));
-
     // ── Step 1: collaborative filtering ────────────────────────────────────
     const candidates = new Map<string, {
       movieId: string; title: string; genre: string; genres: string[];
@@ -207,22 +197,8 @@ export async function POST(request: Request) {
 
     results = results.slice(0, Number(top_n));
 
-    const debugInfo = {
-      receivedUserId: user_id,
-      realTargetId,
-      totalUsersInGraph: allUsers.length,
-      allUserIds: allUsers,
-      targetUserRatingsCount: userRatings.length,
-      targetMovieIds: userRatings.map(r => ({ id: r.toId, weight: r.weight, genres: grafo.getMovieGenres(r.toId) })),
-      favoriteGenres: Array.from(favoriteGenres),
-      collaborativeCount: results.filter(r => r.source === 'taste').length,
-      communityCount: results.filter(r => r.source === 'community').length,
-      trendingCount: results.filter(r => r.source === 'trending').length,
-    };
-
     return NextResponse.json({
       user_id,
-      _debug: debugInfo,
       recommendations: results.map(r => ({
         movieId: r.movieId,
         title: r.title,
