@@ -243,7 +243,7 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
 
         <div className="flex items-center gap-3 self-end sm:self-auto">
           <Link
-            href={`/recommendations?user_id=${profile.user_id}&user_name=${encodeURIComponent(profile.name || 'Membro')}&top_n=50`}
+            href={`/recommendations?user_id=${profile.user_id}&user_name=${encodeURIComponent(profile.name || 'Membro')}&top_n=100`}
             className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 md:px-8 py-3 md:py-4 rounded-2xl font-black flex items-center gap-2 md:gap-3 transition-all shadow-2xl shadow-indigo-100 active:scale-95 group overflow-hidden relative text-sm md:text-base"
           >
             <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />

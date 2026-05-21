@@ -21,16 +21,17 @@ interface TMDBMovie {
   vote_average: number;
 }
 
-async function fetchTMDBPopular(): Promise<TMDBMovie[]> {
+async function fetchTMDBPopular(pages: number): Promise<TMDBMovie[]> {
   const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY?.trim();
   if (!apiKey) return [];
   try {
-    const res = await fetch(
-      `https://api.themoviedb.org/3/movie/popular?api_key=${apiKey}&language=pt-BR&page=1`
+    const requests = Array.from({ length: pages }, (_, i) =>
+      fetch(`https://api.themoviedb.org/3/movie/popular?api_key=${apiKey}&language=pt-BR&page=${i + 1}`)
+        .then(r => r.ok ? r.json() : null)
+        .catch(() => null)
     );
-    if (!res.ok) return [];
-    const data = await res.json();
-    return (data.results as TMDBMovie[]) || [];
+    const responses = await Promise.all(requests);
+    return responses.flatMap(data => (data?.results as TMDBMovie[]) || []);
   } catch {
     return [];
   }
@@ -157,7 +158,9 @@ export async function POST(request: Request) {
 
     // ── Step 3: TMDB popular fallback (always guarantees results) ──────────
     if (results.length < Number(top_n)) {
-      const tmdbMovies = await fetchTMDBPopular();
+      const needed = Number(top_n) - results.length;
+      const pages = Math.ceil((needed + watchedIds.size) / 20) + 1;
+      const tmdbMovies = await fetchTMDBPopular(pages);
 
       // Sort: genre matches first, then by vote_average
       const sorted = tmdbMovies
