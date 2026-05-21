@@ -476,8 +476,8 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
               </h3>
               <p className="text-[10px] font-black text-neutral-400 dark:text-neutral-500 uppercase tracking-widest">Atualizado Agora</p>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {popularMovies.slice(0, 4).map(movie => (
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
+              {popularMovies.slice(0, 15).map(movie => (
                 <div 
                   key={movie.id} 
                   className="group relative aspect-[2/3] rounded-[2rem] overflow-hidden shadow-lg hover:shadow-2xl transition-all cursor-pointer"
