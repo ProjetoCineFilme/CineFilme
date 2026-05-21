@@ -3,10 +3,11 @@
 import React, { useState, useEffect } from 'react';
 import { auth, db } from '../lib/firebase';
 import { doc, getDoc } from 'firebase/firestore';
-import { Film, Sparkles, Loader2, LogOut } from 'lucide-react';
+import { Sparkles, Loader2, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import RatingFlow from '../components/RatingFlow';
 import Dashboard from '../components/Dashboard';
+import Logo from '../components/Logo';
 
 export default function CineFilmeApp() {
   const [user, setUser] = useState<any>(null);
@@ -69,12 +70,12 @@ export default function CineFilmeApp() {
             className="min-h-screen flex flex-col items-center justify-center p-6 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] dark:bg-[#0a0a0a]"
           >
             <div className="text-center mb-12 max-w-sm">
-              <motion.div 
+              <motion.div
                 initial={{ scale: 0.8, rotate: -10 }}
                 animate={{ scale: 1, rotate: 0 }}
-                className="bg-indigo-600 w-20 h-20 rounded-[2.5rem] flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-indigo-200"
+                className="flex items-center justify-center mx-auto mb-6"
               >
-                <Film className="w-10 h-10 text-white" />
+                <Logo size={80} />
               </motion.div>
               <h1 className="text-5xl font-black text-neutral-900 dark:text-white tracking-tighter mb-4">CineFilme</h1>
               <p className="text-neutral-500 dark:text-neutral-400 text-lg leading-snug font-medium">

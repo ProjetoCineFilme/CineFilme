@@ -9,6 +9,7 @@ import Image from 'next/image';
 import { db, auth } from '../../lib/firebase';
 import { doc, setDoc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import MovieDetails from '../../components/MovieDetails';
+import Logo from '../../components/Logo';
 
 type RecommendationSource = 'taste' | 'community' | 'trending';
 
@@ -169,9 +170,12 @@ function RecommendationsList() {
             <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
             <span className="hidden sm:inline">Voltar</span>
           </button>
-          <div className="text-right">
-            <h1 className="text-lg md:text-2xl font-bold text-neutral-900 dark:text-white leading-tight">Recomendações para {userName}</h1>
-            <p className="text-neutral-500 dark:text-neutral-400 text-xs md:text-sm">Baseadas em seu perfil</p>
+          <div className="flex items-center gap-3 text-right">
+            <div className="hidden sm:block"><Logo size={36} /></div>
+            <div>
+              <h1 className="text-lg md:text-2xl font-bold text-neutral-900 dark:text-white leading-tight">Recomendações para {userName}</h1>
+              <p className="text-neutral-500 dark:text-neutral-400 text-xs md:text-sm">Baseadas em seu perfil</p>
+            </div>
           </div>
         </header>
 

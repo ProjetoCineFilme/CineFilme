@@ -28,6 +28,7 @@ import Image from 'next/image';
 import MovieDetails from './MovieDetails';
 import StarRating from './StarRating';
 import ThemeToggle from './ThemeToggle';
+import Logo from './Logo';
 
 interface Movie {
   movie_id: number;
@@ -230,8 +231,8 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
       {/* Header */}
       <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 md:mb-12 bg-white dark:bg-[#141414] p-5 md:p-8 rounded-[1.5rem] md:rounded-[2.5rem] shadow-sm border border-neutral-100 dark:border-[#2a2a2a]">
         <div className="flex items-center gap-4">
-          <div className="bg-indigo-600 p-3 md:p-4 rounded-[1rem] md:rounded-[1.5rem] shadow-xl shadow-indigo-100 flex-shrink-0">
-            <Film className="w-6 h-6 md:w-8 md:h-8 text-white" />
+          <div className="flex-shrink-0">
+            <Logo size={48} />
           </div>
           <div>
             <h1 className="text-2xl md:text-4xl font-black text-neutral-900 dark:text-white tracking-tighter">CineFilme <span className="text-indigo-200">AI</span></h1>
