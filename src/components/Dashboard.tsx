@@ -28,7 +28,7 @@ import Image from 'next/image';
 import MovieDetails from './MovieDetails';
 import StarRating from './StarRating';
 import ThemeToggle from './ThemeToggle';
-import Logo from './Logo';
+import CineFilmeLogo from './CineFilmeLogo';
 
 interface Movie {
   movie_id: number;
@@ -230,17 +230,12 @@ export default function Dashboard({ user, profile }: { user: any, profile: any }
     <div className="max-w-7xl mx-auto p-3 md:p-12 font-sans bg-neutral-50 dark:bg-[#0a0a0a] min-h-screen">
       {/* Header */}
       <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 md:mb-12 bg-white dark:bg-[#141414] p-5 md:p-8 rounded-[1.5rem] md:rounded-[2.5rem] shadow-sm border border-neutral-100 dark:border-[#2a2a2a]">
-        <div className="flex items-center gap-4">
-          <div className="flex-shrink-0">
-            <Logo size={48} />
-          </div>
-          <div>
-            <h1 className="text-2xl md:text-4xl font-black text-neutral-900 dark:text-white tracking-tighter">CineFilme <span className="text-indigo-200">AI</span></h1>
-            <p className="text-neutral-400 dark:text-neutral-500 text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2 mt-1">
-              <UserIcon className="w-3 h-3 text-indigo-400" />
-              <span className="bg-neutral-50 dark:bg-[#1a1a1a] px-3 py-1 rounded-full border border-neutral-100 dark:border-[#2a2a2a] truncate max-w-[140px] sm:max-w-none">{profile.name || 'Membro'}</span>
-            </p>
-          </div>
+        <div className="flex flex-col gap-2">
+          <CineFilmeLogo size="md" showTagline={false} accent="#7c5cff" />
+          <p className="text-neutral-400 dark:text-neutral-500 text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2">
+            <UserIcon className="w-3 h-3 text-violet-400" />
+            <span className="bg-neutral-50 dark:bg-[#1a1a1a] px-3 py-1 rounded-full border border-neutral-100 dark:border-[#2a2a2a] truncate max-w-[140px] sm:max-w-none">{profile.name || 'Membro'}</span>
+          </p>
         </div>
 
         <div className="flex items-center gap-3 self-end sm:self-auto">

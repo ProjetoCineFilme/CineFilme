@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 92" fill="none">
+  <!-- Popcorn balls -->
+  <circle cx="22" cy="24" r="9"  fill="#f6f2e8"/>
+  <circle cx="40" cy="15" r="11" fill="#f6f2e8"/>
+  <circle cx="58" cy="24" r="9"  fill="#f6f2e8"/>
+  <circle cx="31" cy="29" r="6"  fill="#f6f2e8"/>
+  <circle cx="50" cy="29" r="6"  fill="#f6f2e8"/>
+  <!-- Bucket -->
+  <path d="M13 32 L67 32 L61 84 L19 84 Z" fill="#f6f2e8"/>
+  <!-- Stripes -->
+  <path d="M29 32 L25 84 L31 84 L35 32 Z" fill="#0a0a0f" opacity="0.9"/>
+  <path d="M45 32 L41 84 L47 84 L51 32 Z" fill="#0a0a0f" opacity="0.9"/>
+</svg>

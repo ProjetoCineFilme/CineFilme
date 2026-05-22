@@ -7,7 +7,7 @@ import { Sparkles, Loader2, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import RatingFlow from '../components/RatingFlow';
 import Dashboard from '../components/Dashboard';
-import Logo from '../components/Logo';
+import CineFilmeLogo from '../components/CineFilmeLogo';
 
 export default function CineFilmeApp() {
   const [user, setUser] = useState<any>(null);
@@ -73,11 +73,10 @@ export default function CineFilmeApp() {
               <motion.div
                 initial={{ scale: 0.8, rotate: -10 }}
                 animate={{ scale: 1, rotate: 0 }}
-                className="flex items-center justify-center mx-auto mb-6"
+                className="flex items-center justify-center mx-auto mb-8"
               >
-                <Logo size={80} />
+                <CineFilmeLogo size="lg" showTagline={true} accent="#7c5cff" />
               </motion.div>
-              <h1 className="text-5xl font-black text-neutral-900 dark:text-white tracking-tighter mb-4">CineFilme</h1>
               <p className="text-neutral-500 dark:text-neutral-400 text-lg leading-snug font-medium">
                 Descubra seu próximo favorito através de conexões inteligentes.
               </p>
